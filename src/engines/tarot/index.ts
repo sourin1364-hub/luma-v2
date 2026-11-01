@@ -1,6 +1,7 @@
 import { MAJOR_ARCANA_PART_1 } from './majorArcana';
 import { MAJOR_ARCANA_PART_2 } from './majorArcanaPart2';
 import { WANDS_CARDS } from './wands';
+import { CUPS_CARDS } from './cups';
 import type { TarotCard } from './types';
 
 export * from './types';
@@ -8,6 +9,7 @@ export * from './constants';
 export * from './majorArcana';
 export * from './majorArcanaPart2';
 export * from './wands';
+export * from './cups';
 
 export const MAJOR_ARCANA: TarotCard[] = [
   ...MAJOR_ARCANA_PART_1,
@@ -16,7 +18,8 @@ export const MAJOR_ARCANA: TarotCard[] = [
 
 export const ALL_TAROT_CARDS: TarotCard[] = [
   ...MAJOR_ARCANA,
-  ...WANDS_CARDS
+  ...WANDS_CARDS,
+  ...CUPS_CARDS
 ];
 
 export function getMajorCard(id: string): TarotCard | undefined {
@@ -29,4 +32,8 @@ export function getAllMajorCards(): TarotCard[] {
 
 export function getWandsCards(): TarotCard[] {
   return [...WANDS_CARDS];
+}
+
+export function getCupsCards(): TarotCard[] {
+  return [...CUPS_CARDS];
 }
