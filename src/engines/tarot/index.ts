@@ -14,6 +14,8 @@ export * from './wands';
 export * from './cups';
 export * from './swords';
 export * from './pentacles';
+export * from './spreads';
+export * from './draw';
 
 export const MAJOR_ARCANA: TarotCard[] = [
   ...MAJOR_ARCANA_PART_1,
