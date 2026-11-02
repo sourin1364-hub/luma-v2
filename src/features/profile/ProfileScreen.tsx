@@ -8,8 +8,9 @@ import { CityPicker } from '../../components/ui/CityPicker';
 import { AvatarPicker } from './AvatarPicker';
 import { SubscriptionScreen } from '../subscription/SubscriptionScreen';
 import { SubscriptionBadge } from '../subscription/SubscriptionBadge';
+import { AdminScreen } from '../admin/AdminScreen';
 import { useSubscription } from '../../hooks/useSubscription';
-import { LogOut, Save, Loader2, User, Calendar, Heart, Star, Crown } from 'lucide-react';
+import { LogOut, Save, Loader2, User, Calendar, Heart, Star, Crown, Shield } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
   getProfile, updateProfile, getBirthProfile, saveBirthProfile,
@@ -41,6 +42,7 @@ export function ProfileScreen() {
   const [zodiacInfo, setZodiacInfo] = useState<any>(null);
   const [birthstoneInfo, setBirthstoneInfo] = useState<any>(null);
   const [showSubscription, setShowSubscription] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -150,6 +152,10 @@ export function ProfileScreen() {
     }
   };
 
+  if (showAdmin && subscription.isAdmin) {
+    return <AdminScreen onBack={() => setShowAdmin(false)} />;
+  }
+
   if (showSubscription) {
     return <SubscriptionScreen onBack={() => setShowSubscription(false)} />;
   }
@@ -184,7 +190,6 @@ export function ProfileScreen() {
         <p className="text-xs text-[var(--luma-text-muted)] mt-1" dir="ltr">{user?.email}</p>
       </Card>
 
-      {/* کارت وضعیت اشتراک */}
       {!subscription.isLoading && (
         <Card variant="elevated" padding="md">
           <div className="flex items-center gap-2 mb-3">
@@ -301,6 +306,13 @@ export function ProfileScreen() {
             <><Save className="w-4 h-4" />ذخیره تغییرات</>
           )}
         </Button>
+
+        {subscription.isAdmin && (
+          <Button variant="secondary" fullWidth onClick={() => setShowAdmin(true)}>
+            <Shield className="w-4 h-4" />
+            پنل مدیریت
+          </Button>
+        )}
 
         <Button variant="gold" fullWidth onClick={() => setShowSubscription(true)}>
           <Crown className="w-4 h-4" />
