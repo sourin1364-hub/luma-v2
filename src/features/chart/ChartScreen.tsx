@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -14,8 +14,8 @@ import { PLANET_NAMES_FA } from '../../engines/astronomy/constants';
 import type { NatalChart, PlanetName } from '../../engines/astronomy/types';
 import type { CityWithProvince } from '../../engines/location';
 import { saveChart } from './chartService';
-import { formatJalaaliDate } from '../../engines/calendar/format';
 import { useAuthStore } from '../../store/useAuthStore';
+import { formatJalaaliDate } from '../../engines/calendar/format';
 
 const PLANET_ORDER: PlanetName[] = [
   'sun', 'moon', 'mercury', 'venus', 'mars',
@@ -33,22 +33,55 @@ const DEFAULT_CITY: CityWithProvince = {
   timezone: 'Asia/Tehran'
 };
 
+const STORAGE_KEY = 'luma_chart_state';
+
+interface ChartState {
+  birthDate: JalaaliDateValue;
+  birthTime: TimeValue;
+  city: CityWithProvince | null;
+  chart: NatalChart | null;
+}
+
+function loadState(): ChartState | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function saveState(state: ChartState) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch { /* ignore */ }
+}
+
 export function ChartScreen() {
   const user = useAuthStore((s) => s.user);
-  const [birthDate, setBirthDate] = useState<JalaaliDateValue>({
-    year: 1364,
-    month: 4,
-    day: 1
-  });
-  const [birthTime, setBirthTime] = useState<TimeValue>({
-    hour: 14,
-    minute: 30
-  });
-  const [city, setCity] = useState<CityWithProvince | null>(DEFAULT_CITY);
-  const [chart, setChart] = useState<NatalChart | null>(null);
+
+  // بارگذاری اولیه از sessionStorage
+  const savedState = loadState();
+
+  const [birthDate, setBirthDate] = useState<JalaaliDateValue>(
+    savedState?.birthDate || { year: 1364, month: 4, day: 1 }
+  );
+  const [birthTime, setBirthTime] = useState<TimeValue>(
+    savedState?.birthTime || { hour: 14, minute: 30 }
+  );
+  const [city, setCity] = useState<CityWithProvince | null>(
+    savedState?.city || DEFAULT_CITY
+  );
+  const [chart, setChart] = useState<NatalChart | null>(savedState?.chart || null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  // ذخیره خودکار در sessionStorage
+  useEffect(() => {
+    saveState({ birthDate, birthTime, city, chart });
+  }, [birthDate, birthTime, city, chart]);
 
   const handleCalculate = async () => {
     if (!city) {
@@ -68,7 +101,6 @@ export function ChartScreen() {
       const result = calculateNatalChart(utcDate, city.lat, city.lon);
       setChart(result);
 
-      // ذخیره خودکار در Supabase
       if (user) {
         try {
           await saveChart(user.id, birthDate, birthTime, city, result);
@@ -88,6 +120,7 @@ export function ChartScreen() {
     setChart(null);
     setError(null);
     setSaved(false);
+    sessionStorage.removeItem(STORAGE_KEY);
   };
 
   if (chart && city) {
