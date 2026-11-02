@@ -38,3 +38,185 @@ export function getSignDegree(longitude: number): number {
   const normalized = ((longitude % 360) + 360) % 360;
   return normalized % 30;
 }
+// ============================================
+// اطلاعات کامل برج‌ها برای صفحه زودیاک
+// ============================================
+export interface ZodiacDetail {
+  name: ZodiacSignName;
+  nameFa: string;
+  nameEn: string;
+  shamsiMonth: string;
+  dateRange: string;
+  element: Element;
+  elementFa: string;
+  modality: 'cardinal' | 'fixed' | 'mutable';
+  modalityFa: string;
+  rulingPlanet: string;
+  rulingPlanetFa: string;
+  symbol: string;
+  traits: string[];
+  strengths: string[];
+  weaknesses: string[];
+  description: string;
+  luckyColor: string;
+  luckyNumber: string;
+}
+
+export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
+  aries: {
+    name: 'aries', nameFa: 'حمل', nameEn: 'Aries', shamsiMonth: 'فروردین',
+    dateRange: '۲۱ مارس – ۱۹ آوریل',
+    element: 'fire', elementFa: 'آتش',
+    modality: 'cardinal', modalityFa: 'کاردینال (آغازگر)',
+    rulingPlanet: 'mars', rulingPlanetFa: 'مریخ',
+    symbol: '♈',
+    traits: ['شجاع', 'پیشرو', 'پرانرژی', 'مستقل'],
+    strengths: ['رهبری', 'اعتماد به نفس', 'شور و اشتیاق'],
+    weaknesses: ['عجول', 'بی‌حوصله', 'گاهی پرخاشگر'],
+    description: 'حمل نماد آغاز و انرژی است. افراد این برج با شور و شوق زندگی می‌کنند و از چالش لذت می‌برند. آن‌ها پیشگام و مستقل هستند.',
+    luckyColor: 'قرمز', luckyNumber: '۹'
+  },
+  taurus: {
+    name: 'taurus', nameFa: 'ثور', nameEn: 'Taurus', shamsiMonth: 'اردیبهشت',
+    dateRange: '۲۰ آوریل – ۲۰ می',
+    element: 'earth', elementFa: 'خاک',
+    modality: 'fixed', modalityFa: 'ثابت',
+    rulingPlanet: 'venus', rulingPlanetFa: 'زهره',
+    symbol: '♉',
+    traits: ['پایدار', 'حسی', 'اهل لذت', 'قابل اعتماد'],
+    strengths: ['صبر', 'وفاداری', 'استقامت'],
+    weaknesses: ['لجباز', 'مالک‌گرا', 'گاهی تنبل'],
+    description: 'ثور نماد ثبات و زیبایی است. افراد این برج به امنیت و لذت‌های حسی اهمیت می‌دهند و با صبر به اهداف خود می‌رسند.',
+    luckyColor: 'سبز', luckyNumber: '۶'
+  },
+  gemini: {
+    name: 'gemini', nameFa: 'جوزا', nameEn: 'Gemini', shamsiMonth: 'خرداد',
+    dateRange: '۲۱ می – ۲۰ ژوئن',
+    element: 'air', elementFa: 'هوا',
+    modality: 'mutable', modalityFa: 'تغییرپذیر',
+    rulingPlanet: 'mercury', rulingPlanetFa: 'عطارد',
+    symbol: '♊',
+    traits: ['کنجکاو', 'ارتباطی', 'سازگار', 'باهوش'],
+    strengths: ['ذکاوت', 'انطباق‌پذیری', 'مهارت ارتباطی'],
+    weaknesses: ['پراکنده', 'دو‌رو', 'بی‌قرار'],
+    description: 'جوزا نماد کنجکاوی و ارتباط است. افراد این برج عاشق یادگیری و گفتگو هستند و ذهنی چابک دارند.',
+    luckyColor: 'زرد', luckyNumber: '۵'
+  },
+  cancer: {
+    name: 'cancer', nameFa: 'سرطان', nameEn: 'Cancer', shamsiMonth: 'تیر',
+    dateRange: '۲۱ ژوئن – ۲۲ جولای',
+    element: 'water', elementFa: 'آب',
+    modality: 'cardinal', modalityFa: 'کاردینال (آغازگر)',
+    rulingPlanet: 'moon', rulingPlanetFa: 'ماه',
+    symbol: '♋',
+    traits: ['مهربان', 'حساس', 'خانواده‌دوست', 'شهودی'],
+    strengths: ['همدلی', 'وفاداری', 'مراقبت'],
+    weaknesses: ['حساسیت زیاد', 'وابستگی', 'بدگمانی'],
+    description: 'سرطان نماد خانه و خانواده است. افراد این برج به عزیزانشان اهمیت می‌دهند و شهودی قوی دارند.',
+    luckyColor: 'نقره‌ای', luckyNumber: '۲'
+  },
+  leo: {
+    name: 'leo', nameFa: 'اسد', nameEn: 'Leo', shamsiMonth: 'مرداد',
+    dateRange: '۲۳ جولای – ۲۲ آگوست',
+    element: 'fire', elementFa: 'آتش',
+    modality: 'fixed', modalityFa: 'ثابت',
+    rulingPlanet: 'sun', rulingPlanetFa: 'خورشید',
+    symbol: '♌',
+    traits: ['خلاق', 'رهبر', 'درخشان', 'سخاوتمند'],
+    strengths: ['اعتماد به نفس', 'جذابیت', 'سخاوت'],
+    weaknesses: ['غرور', 'خودمحور', 'حساس به انتقاد'],
+    description: 'اسد نماد قدرت و خلاقیت است. افراد این برج به دنبال شناخت و ابراز وجود هستند و قلبی سخاوتمند دارند.',
+    luckyColor: 'طلایی', luckyNumber: '۱'
+  },
+  virgo: {
+    name: 'virgo', nameFa: 'سنبله', nameEn: 'Virgo', shamsiMonth: 'شهریور',
+    dateRange: '۲۳ آگوست – ۲۲ سپتامبر',
+    element: 'earth', elementFa: 'خاک',
+    modality: 'mutable', modalityFa: 'تغییرپذیر',
+    rulingPlanet: 'mercury', rulingPlanetFa: 'عطارد',
+    symbol: '♍',
+    traits: ['دقیق', 'تحلیلی', 'خدمتگزار', 'منظم'],
+    strengths: ['دقت', 'سازماندهی', 'مسئولیت‌پذیری'],
+    weaknesses: ['کمال‌گرا', 'انتقادگر', 'مضطرب'],
+    description: 'سنبله نماد دقت و خدمت است. افراد این برج به جزئیات توجه دارند و به دنبال کمال و بهبود هستند.',
+    luckyColor: 'سبز زیتونی', luckyNumber: '۵'
+  },
+  libra: {
+    name: 'libra', nameFa: 'میزان', nameEn: 'Libra', shamsiMonth: 'مهر',
+    dateRange: '۲۳ سپتامبر – ۲۲ اکتبر',
+    element: 'air', elementFa: 'هوا',
+    modality: 'cardinal', modalityFa: 'کاردینال (آغازگر)',
+    rulingPlanet: 'venus', rulingPlanetFa: 'زهره',
+    symbol: '♎',
+    traits: ['دیپلمات', 'اجتماعی', 'عاشق زیبایی', 'متعادل'],
+    strengths: ['انصاف', 'جذابیت', 'مهارت دیپلماسی'],
+    weaknesses: ['بی‌تصمیم', 'وابسته به تایید', 'سطحی'],
+    description: 'میزان نماد تعادل و زیبایی است. افراد این برج به روابط هماهنگ و زیبایی اهمیت می‌دهند.',
+    luckyColor: 'صورتی', luckyNumber: '۶'
+  },
+  scorpio: {
+    name: 'scorpio', nameFa: 'عقرب', nameEn: 'Scorpio', shamsiMonth: 'آبان',
+    dateRange: '۲۳ اکتبر – ۲۱ نوامبر',
+    element: 'water', elementFa: 'آب',
+    modality: 'fixed', modalityFa: 'ثابت',
+    rulingPlanet: 'pluto', rulingPlanetFa: 'پلوتو',
+    symbol: '♏',
+    traits: ['عمیق', 'قدرتمند', 'رازآلود', 'پرشور'],
+    strengths: ['اراده', 'وفاداری', 'شهود نافذ'],
+    weaknesses: ['حسادت', 'کینه‌توزی', 'کنترل‌گر'],
+    description: 'عقرب نماد عمق و قدرت است. افراد این برج با شدت و تعهد زندگی می‌کنند و شهودی نافذ دارند.',
+    luckyColor: 'قرمز تیره', luckyNumber: '۸'
+  },
+  sagittarius: {
+    name: 'sagittarius', nameFa: 'قوس', nameEn: 'Sagittarius', shamsiMonth: 'آذر',
+    dateRange: '۲۲ نوامبر – ۲۱ دسامبر',
+    element: 'fire', elementFa: 'آتش',
+    modality: 'mutable', modalityFa: 'تغییرپذیر',
+    rulingPlanet: 'jupiter', rulingPlanetFa: 'مشتری',
+    symbol: '♐',
+    traits: ['ماجراجو', 'خوش‌بین', 'فلسفی', 'آزاد'],
+    strengths: ['خوش‌بینی', 'صداقت', 'عشق به سفر'],
+    weaknesses: ['بی‌تعهد', 'بی‌ملاحظه', 'زیاده‌رو'],
+    description: 'قوس نماد ماجراجویی و فلسفه است. افراد این برج به دنبال معنا و آزادی هستند و عاشق سفر و کشف.',
+    luckyColor: 'بنفش', luckyNumber: '۳'
+  },
+  capricorn: {
+    name: 'capricorn', nameFa: 'جدی', nameEn: 'Capricorn', shamsiMonth: 'دی',
+    dateRange: '۲۲ دسامبر – ۱۹ ژانویه',
+    element: 'earth', elementFa: 'خاک',
+    modality: 'cardinal', modalityFa: 'کاردینال (آغازگر)',
+    rulingPlanet: 'saturn', rulingPlanetFa: 'زحل',
+    symbol: '♑',
+    traits: ['جاه‌طلب', 'مسئولیت‌پذیر', 'منظم', 'پایدار'],
+    strengths: ['پشتکار', 'انضباط', 'مدیریت'],
+    weaknesses: ['سردی', 'بدبینی', 'کمال‌گرا'],
+    description: 'جدی نماد نظم و جاه‌طلبی است. افراد این برج برای اهداف بلندمدت تلاش می‌کنند و پایدار هستند.',
+    luckyColor: 'قهوه‌ای', luckyNumber: '۴'
+  },
+  aquarius: {
+    name: 'aquarius', nameFa: 'دلو', nameEn: 'Aquarius', shamsiMonth: 'بهمن',
+    dateRange: '۲۰ ژانویه – ۱۸ فوریه',
+    element: 'air', elementFa: 'هوا',
+    modality: 'fixed', modalityFa: 'ثابت',
+    rulingPlanet: 'uranus', rulingPlanetFa: 'اورانوس',
+    symbol: '♒',
+    traits: ['مبتکر', 'مستقل', 'انسان‌دوست', 'آزاد'],
+    strengths: ['نوآوری', 'اصالت', 'تفکر مستقل'],
+    weaknesses: ['بی‌احساس', 'لجباز', 'دور از واقعیت'],
+    description: 'دلو نماد نوآوری و آزادی است. افراد این برج به دنبال تغییر و نوآوری هستند و ذهنی آزاد دارند.',
+    luckyColor: 'آبی', luckyNumber: '۷'
+  },
+  pisces: {
+    name: 'pisces', nameFa: 'حوت', nameEn: 'Pisces', shamsiMonth: 'اسفند',
+    dateRange: '۱۹ فوریه – ۲۰ مارس',
+    element: 'water', elementFa: 'آب',
+    modality: 'mutable', modalityFa: 'تغییرپذیر',
+    rulingPlanet: 'neptune', rulingPlanetFa: 'نپتون',
+    symbol: '♓',
+    traits: ['شهودی', 'هنرمند', 'دلسوز', 'رویایی'],
+    strengths: ['تخیل', 'همدلی', 'خلاقیت'],
+    weaknesses: ['فرار از واقعیت', 'حساسیت زیاد', 'بی‌اراده'],
+    description: 'حوت نماد رویا و شهود است. افراد این برج با تخیل و همدلی زندگی می‌کنند و به دنیای درون اهمیت می‌دهند.',
+    luckyColor: 'فیروزه‌ای', luckyNumber: '۳'
+  }
+};

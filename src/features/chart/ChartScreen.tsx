@@ -8,6 +8,7 @@ import { CityPicker } from '../../components/ui/CityPicker';
 import { ChartWheel } from '../../components/ui/ChartWheel';
 import { ChartInterpretation } from '../../components/ui/ChartInterpretation';
 import { ZodiacScreen } from './ZodiacScreen';
+import { getZodiacFromBirthDate, getBirthstoneFromBirthDate } from '../../engines/zodiac';
 import { MapPin, Clock, Calendar, Sparkles, Loader2, CheckCircle2, Star } from 'lucide-react';
 import { birthToUtc } from '../../engines/calendar/timezone';
 import { calculateNatalChart } from '../../engines/astronomy/chart';
@@ -77,6 +78,8 @@ export function ChartScreen() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [showZodiac, setShowZodiac] = useState(false);
+  const [zodiacInfo, setZodiacInfo] = useState<any>(null);
+  const [birthstoneInfo, setBirthstoneInfo] = useState<any>(null);
 
   useEffect(() => {
     saveState({ birthDate, birthTime, city, chart });
@@ -98,6 +101,15 @@ export function ChartScreen() {
         city.timezone || 'Asia/Tehran'
       );
       const result = calculateNatalChart(utcDate, city.lat, city.lon);
+      // محاسبه برج و سنگ از تاریخ تولد
+      const zodiacInfo = getZodiacFromBirthDate({
+        year: birthDate.year, month: birthDate.month, day: birthDate.day
+      });
+      const birthstoneInfo = getBirthstoneFromBirthDate({
+        year: birthDate.year, month: birthDate.month, day: birthDate.day
+      });
+      setZodiacInfo(zodiacInfo);
+      setBirthstoneInfo(birthstoneInfo);
       setChart(result);
 
       if (user) {
