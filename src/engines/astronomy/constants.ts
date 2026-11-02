@@ -1,18 +1,18 @@
 import type { ZodiacSign, PlanetName, ZodiacSignName, Element } from './types';
 
 export const ZODIAC_SIGNS: ZodiacSign[] = [
-  { name: 'aries',       nameFa: 'حمل',    index: 1,  startDegree: 0,   element: 'fire' as Element,  modality: 'cardinal', ruler: 'mars' },
-  { name: 'taurus',      nameFa: 'ثور',    index: 2,  startDegree: 30,  element: 'earth' as Element, modality: 'fixed',    ruler: 'venus' },
-  { name: 'gemini',      nameFa: 'جوزا',   index: 3,  startDegree: 60,  element: 'air' as Element,   modality: 'mutable',  ruler: 'mercury' },
-  { name: 'cancer',      nameFa: 'سرطان',  index: 4,  startDegree: 90,  element: 'water' as Element, modality: 'cardinal', ruler: 'moon' },
-  { name: 'leo',         nameFa: 'اسد',    index: 5,  startDegree: 120, element: 'fire' as Element,  modality: 'fixed',    ruler: 'sun' },
-  { name: 'virgo',       nameFa: 'سنبله',  index: 6,  startDegree: 150, element: 'earth' as Element, modality: 'mutable',  ruler: 'mercury' },
-  { name: 'libra',       nameFa: 'میزان',  index: 7,  startDegree: 180, element: 'air' as Element,   modality: 'cardinal', ruler: 'venus' },
-  { name: 'scorpio',     nameFa: 'عقرب',   index: 8,  startDegree: 210, element: 'water' as Element, modality: 'fixed',    ruler: 'pluto' },
-  { name: 'sagittarius', nameFa: 'قوس',    index: 9,  startDegree: 240, element: 'fire' as Element,  modality: 'mutable',  ruler: 'jupiter' },
-  { name: 'capricorn',   nameFa: 'جدی',    index: 10, startDegree: 270, element: 'earth' as Element, modality: 'cardinal', ruler: 'saturn' },
-  { name: 'aquarius',    nameFa: 'دلو',    index: 11, startDegree: 300, element: 'air' as Element,   modality: 'fixed',    ruler: 'uranus' },
-  { name: 'pisces',      nameFa: 'حوت',    index: 12, startDegree: 330, element: 'water' as Element, modality: 'mutable',  ruler: 'jupiter' }
+  { name: 'aries', nameFa: 'حمل', index: 1, startDegree: 0, element: 'fire', modality: 'cardinal', ruler: 'mars' },
+  { name: 'taurus', nameFa: 'ثور', index: 2, startDegree: 30, element: 'earth', modality: 'fixed', ruler: 'venus' },
+  { name: 'gemini', nameFa: 'جوزا', index: 3, startDegree: 60, element: 'air', modality: 'mutable', ruler: 'mercury' },
+  { name: 'cancer', nameFa: 'سرطان', index: 4, startDegree: 90, element: 'water', modality: 'cardinal', ruler: 'moon' },
+  { name: 'leo', nameFa: 'اسد', index: 5, startDegree: 120, element: 'fire', modality: 'fixed', ruler: 'sun' },
+  { name: 'virgo', nameFa: 'سنبله', index: 6, startDegree: 150, element: 'earth', modality: 'mutable', ruler: 'mercury' },
+  { name: 'libra', nameFa: 'میزان', index: 7, startDegree: 180, element: 'air', modality: 'cardinal', ruler: 'venus' },
+  { name: 'scorpio', nameFa: 'عقرب', index: 8, startDegree: 210, element: 'water', modality: 'fixed', ruler: 'pluto' },
+  { name: 'sagittarius', nameFa: 'قوس', index: 9, startDegree: 240, element: 'fire', modality: 'mutable', ruler: 'jupiter' },
+  { name: 'capricorn', nameFa: 'جدی', index: 10, startDegree: 270, element: 'earth', modality: 'cardinal', ruler: 'saturn' },
+  { name: 'aquarius', nameFa: 'دلو', index: 11, startDegree: 300, element: 'air', modality: 'fixed', ruler: 'uranus' },
+  { name: 'pisces', nameFa: 'حوت', index: 12, startDegree: 330, element: 'water', modality: 'mutable', ruler: 'jupiter' }
 ];
 
 export const PLANET_NAMES_FA: Record<PlanetName, string> = {
@@ -38,6 +38,7 @@ export function getSignDegree(longitude: number): number {
   const normalized = ((longitude % 360) + 360) % 360;
   return normalized % 30;
 }
+
 // ============================================
 // اطلاعات کامل برج‌ها برای صفحه زودیاک
 // ============================================
@@ -64,7 +65,8 @@ export interface ZodiacDetail {
 
 export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
   aries: {
-    name: 'aries', nameFa: 'حمل', nameEn: 'Aries', shamsiMonth: 'فروردین',
+    name: 'aries' as ZodiacSignName, nameFa: 'حمل', nameEn: 'Aries',
+    shamsiMonth: 'فروردین',
     dateRange: '۲۱ مارس – ۱۹ آوریل',
     element: 'fire' as Element, elementFa: 'آتش',
     modality: 'cardinal', modalityFa: 'کاردینال (آغازگر)',
@@ -77,7 +79,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'قرمز', luckyNumber: '۹'
   },
   taurus: {
-    name: 'taurus', nameFa: 'ثور', nameEn: 'Taurus', shamsiMonth: 'اردیبهشت',
+    name: 'taurus' as ZodiacSignName, nameFa: 'ثور', nameEn: 'Taurus',
+    shamsiMonth: 'اردیبهشت',
     dateRange: '۲۰ آوریل – ۲۰ می',
     element: 'earth' as Element, elementFa: 'خاک',
     modality: 'fixed', modalityFa: 'ثابت',
@@ -90,7 +93,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'سبز', luckyNumber: '۶'
   },
   gemini: {
-    name: 'gemini', nameFa: 'جوزا', nameEn: 'Gemini', shamsiMonth: 'خرداد',
+    name: 'gemini' as ZodiacSignName, nameFa: 'جوزا', nameEn: 'Gemini',
+    shamsiMonth: 'خرداد',
     dateRange: '۲۱ می – ۲۰ ژوئن',
     element: 'air' as Element, elementFa: 'هوا',
     modality: 'mutable', modalityFa: 'تغییرپذیر',
@@ -103,7 +107,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'زرد', luckyNumber: '۵'
   },
   cancer: {
-    name: 'cancer', nameFa: 'سرطان', nameEn: 'Cancer', shamsiMonth: 'تیر',
+    name: 'cancer' as ZodiacSignName, nameFa: 'سرطان', nameEn: 'Cancer',
+    shamsiMonth: 'تیر',
     dateRange: '۲۱ ژوئن – ۲۲ جولای',
     element: 'water' as Element, elementFa: 'آب',
     modality: 'cardinal', modalityFa: 'کاردینال (آغازگر)',
@@ -116,7 +121,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'نقره‌ای', luckyNumber: '۲'
   },
   leo: {
-    name: 'leo', nameFa: 'اسد', nameEn: 'Leo', shamsiMonth: 'مرداد',
+    name: 'leo' as ZodiacSignName, nameFa: 'اسد', nameEn: 'Leo',
+    shamsiMonth: 'مرداد',
     dateRange: '۲۳ جولای – ۲۲ آگوست',
     element: 'fire' as Element, elementFa: 'آتش',
     modality: 'fixed', modalityFa: 'ثابت',
@@ -129,7 +135,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'طلایی', luckyNumber: '۱'
   },
   virgo: {
-    name: 'virgo', nameFa: 'سنبله', nameEn: 'Virgo', shamsiMonth: 'شهریور',
+    name: 'virgo' as ZodiacSignName, nameFa: 'سنبله', nameEn: 'Virgo',
+    shamsiMonth: 'شهریور',
     dateRange: '۲۳ آگوست – ۲۲ سپتامبر',
     element: 'earth' as Element, elementFa: 'خاک',
     modality: 'mutable', modalityFa: 'تغییرپذیر',
@@ -142,7 +149,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'سبز زیتونی', luckyNumber: '۵'
   },
   libra: {
-    name: 'libra', nameFa: 'میزان', nameEn: 'Libra', shamsiMonth: 'مهر',
+    name: 'libra' as ZodiacSignName, nameFa: 'میزان', nameEn: 'Libra',
+    shamsiMonth: 'مهر',
     dateRange: '۲۳ سپتامبر – ۲۲ اکتبر',
     element: 'air' as Element, elementFa: 'هوا',
     modality: 'cardinal', modalityFa: 'کاردینال (آغازگر)',
@@ -155,7 +163,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'صورتی', luckyNumber: '۶'
   },
   scorpio: {
-    name: 'scorpio', nameFa: 'عقرب', nameEn: 'Scorpio', shamsiMonth: 'آبان',
+    name: 'scorpio' as ZodiacSignName, nameFa: 'عقرب', nameEn: 'Scorpio',
+    shamsiMonth: 'آبان',
     dateRange: '۲۳ اکتبر – ۲۱ نوامبر',
     element: 'water' as Element, elementFa: 'آب',
     modality: 'fixed', modalityFa: 'ثابت',
@@ -168,7 +177,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'قرمز تیره', luckyNumber: '۸'
   },
   sagittarius: {
-    name: 'sagittarius', nameFa: 'قوس', nameEn: 'Sagittarius', shamsiMonth: 'آذر',
+    name: 'sagittarius' as ZodiacSignName, nameFa: 'قوس', nameEn: 'Sagittarius',
+    shamsiMonth: 'آذر',
     dateRange: '۲۲ نوامبر – ۲۱ دسامبر',
     element: 'fire' as Element, elementFa: 'آتش',
     modality: 'mutable', modalityFa: 'تغییرپذیر',
@@ -181,7 +191,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'بنفش', luckyNumber: '۳'
   },
   capricorn: {
-    name: 'capricorn', nameFa: 'جدی', nameEn: 'Capricorn', shamsiMonth: 'دی',
+    name: 'capricorn' as ZodiacSignName, nameFa: 'جدی', nameEn: 'Capricorn',
+    shamsiMonth: 'دی',
     dateRange: '۲۲ دسامبر – ۱۹ ژانویه',
     element: 'earth' as Element, elementFa: 'خاک',
     modality: 'cardinal', modalityFa: 'کاردینال (آغازگر)',
@@ -194,7 +205,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'قهوه‌ای', luckyNumber: '۴'
   },
   aquarius: {
-    name: 'aquarius', nameFa: 'دلو', nameEn: 'Aquarius', shamsiMonth: 'بهمن',
+    name: 'aquarius' as ZodiacSignName, nameFa: 'دلو', nameEn: 'Aquarius',
+    shamsiMonth: 'بهمن',
     dateRange: '۲۰ ژانویه – ۱۸ فوریه',
     element: 'air' as Element, elementFa: 'هوا',
     modality: 'fixed', modalityFa: 'ثابت',
@@ -207,7 +219,8 @@ export const ZODIAC_DETAILS: Record<ZodiacSignName, ZodiacDetail> = {
     luckyColor: 'آبی', luckyNumber: '۷'
   },
   pisces: {
-    name: 'pisces', nameFa: 'حوت', nameEn: 'Pisces', shamsiMonth: 'اسفند',
+    name: 'pisces' as ZodiacSignName, nameFa: 'حوت', nameEn: 'Pisces',
+    shamsiMonth: 'اسفند',
     dateRange: '۱۹ فوریه – ۲۰ مارس',
     element: 'water' as Element, elementFa: 'آب',
     modality: 'mutable', modalityFa: 'تغییرپذیر',
