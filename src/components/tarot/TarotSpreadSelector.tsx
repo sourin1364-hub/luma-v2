@@ -1,6 +1,6 @@
 import { SPREADS } from '../../engines/tarot/spreads';
 import { type Spread } from '../../engines/tarot/types';
-import { Sparkles, Clock, ArrowRight, Layers, HelpCircle, Heart } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight, Layers, HelpCircle, Heart, Cross, Moon, Users, Briefcase, Calendar } from 'lucide-react';
 
 interface TarotSpreadSelectorProps {
   onSelect: (spread: Spread) => void;
@@ -12,7 +12,12 @@ const SPREAD_ICONS: Record<string, typeof Sparkles> = {
   'past-present-future': Clock,
   'situation-obstacle-advice': Layers,
   'mind-heart-action': Heart,
-  'yes-no': ArrowRight
+  'yes-no': ArrowRight,
+  'celtic-cross': Cross,
+  'horseshoe': Moon,
+  'relationship': Users,
+  'career': Briefcase,
+  'yearly': Calendar
 };
 
 export function TarotSpreadSelector({ onSelect }: TarotSpreadSelectorProps) {

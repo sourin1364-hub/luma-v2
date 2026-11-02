@@ -8,6 +8,8 @@ import { TarotRevealCard } from '../../components/tarot/TarotRevealCard';
 import { TarotHistoryScreen } from './TarotHistoryScreen';
 import { Sparkles, ArrowRight, History } from 'lucide-react';
 import { performReading, interpretReading } from '../../engines/tarot';
+import { synthesizeReading } from '../../engines/tarot/interpretation/index';
+import type { ReadingSynthesis } from '../../engines/tarot/interpretation/index';
 import type { Spread, ReadingResult, ReadingInterpretation } from '../../engines/tarot';
 import { saveReading } from './tarotHistoryService';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -21,6 +23,7 @@ export function TarotScreen() {
   const [question, setQuestion] = useState('');
   const [reading, setReading] = useState<ReadingResult | null>(null);
   const [interpretation, setInterpretation] = useState<ReadingInterpretation | null>(null);
+  const [synthesis, setSynthesis] = useState<ReadingSynthesis | null>(null);
 
   const handleSelectSpread = (spread: Spread) => {
     setSelectedSpread(spread);
@@ -37,8 +40,10 @@ export function TarotScreen() {
     if (!selectedSpread) return;
     const result = performReading(selectedSpread, question);
     const interp = interpretReading(result);
+    const synth = synthesizeReading(result);
     setReading(result);
     setInterpretation(interp);
+    setSynthesis(synth);
     setStep('result');
 
     if (user) {
@@ -154,15 +159,66 @@ export function TarotScreen() {
           ))}
         </div>
 
-        <Card variant="gold-border" padding="md">
-          <h3 className="font-heading text-base text-[var(--luma-text)] mb-2">جمع‌بندی</h3>
-          <p className="text-sm text-[var(--luma-text-muted)] leading-relaxed mb-3">
-            {interpretation.summary}
-          </p>
-          <div className="pt-3 border-t border-[var(--luma-border)]">
-            <p className="text-xs text-[var(--luma-text-subtle)]">{interpretation.advice}</p>
-          </div>
-        </Card>
+        {/* جمع‌بندی حرفه‌ای بر اساس موتور جدید */}
+        {synthesis && (
+          <Card variant="gold-border" padding="md">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-heading text-base text-[var(--luma-text)]">تحلیل جامع LUMA</h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]">
+                {synthesis.energyScore}/100
+              </span>
+            </div>
+
+            {/* تم کلی */}
+            <div className="flex flex-wrap gap-1 mb-3">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)]">
+                تم: {synthesis.overallTheme}
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)]">
+                عنصر: {synthesis.dominantElement}
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)]">
+                خال: {synthesis.dominantSuit}
+              </span>
+            </div>
+
+            {/* روایت */}
+            <div className="mb-3">
+              <p className="text-xs text-[var(--luma-text-muted)] mb-1 font-medium">روایت فال:</p>
+              <p className="text-sm text-[var(--luma-text)] leading-relaxed text-justify" dir="rtl">{synthesis.narrative}</p>
+            </div>
+
+            {/* توصیه */}
+            <div className="pt-3 border-t border-[var(--luma-border)] mb-3">
+              <p className="text-xs text-[var(--luma-gold)] mb-1 font-medium">💡 توصیه اصلی LUMA:</p>
+              <p className="text-sm text-[var(--luma-text)] leading-relaxed text-justify" dir="rtl">{synthesis.advice}</p>
+            </div>
+
+            {/* هشدارها */}
+            {synthesis.warnings.length > 0 && (
+              <div className="pt-3 border-t border-[var(--luma-border)] mb-3">
+                <p className="text-xs text-amber-400 mb-1 font-medium">⚠️ هشدارها:</p>
+                <ul className="space-y-1">
+                  {synthesis.warnings.map((w, i) => (
+                    <li key={i} className="text-xs text-amber-400/80 leading-relaxed text-justify" dir="rtl">• {w}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* affirmations */}
+            {synthesis.affirmations.length > 0 && (
+              <div className="pt-3 border-t border-[var(--luma-border)]">
+                <p className="text-xs text-[var(--luma-gold)] mb-1 font-medium">✨ جملات تاکیدی:</p>
+                <ul className="space-y-1">
+                  {synthesis.affirmations.map((a, i) => (
+                    <li key={i} className="text-xs text-[var(--luma-text-muted)] italic leading-relaxed text-justify" dir="rtl">«{a}»</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </Card>
+        )}
 
         <Button variant="secondary" fullWidth onClick={handleReset}>
           <ArrowRight className="w-4 h-4" />
