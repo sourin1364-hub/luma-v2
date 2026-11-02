@@ -7,6 +7,7 @@ import { ChartScreen } from './features/chart/ChartScreen';
 import { TarotScreen } from './features/tarot/TarotScreen';
 import { NumerologyScreen } from './features/numerology/NumerologyScreen';
 import { ChineseScreen } from './features/chinese/ChineseScreen';
+import { ProfileScreen } from './features/profile/ProfileScreen';
 import { useAuthStore } from './store/useAuthStore';
 import { getCurrentUser, onAuthStateChange } from './features/auth/authService';
 import { Loader2 } from 'lucide-react';
@@ -19,30 +20,21 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabId>('home');
 
   useEffect(() => {
-    // بارگذاری اولیه
     getCurrentUser()
-      .then((u) => {
-        setUser(u);
-      })
+      .then((u) => setUser(u))
       .catch((err) => {
         console.error('Auth init error:', err);
         setUser(null);
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
 
-    // گوش دادن به تغییرات auth
     const { data: { subscription } } = onAuthStateChange((u) => {
       setUser(u);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [setUser, setLoading]);
 
-  // در حال بارگذاری
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[var(--luma-bg)] flex items-center justify-center">
@@ -54,12 +46,8 @@ function App() {
     );
   }
 
-  // کاربر لاگین نکرده
-  if (!user) {
-    return <AuthScreen />;
-  }
+  if (!user) return <AuthScreen />;
 
-  // کاربر لاگین کرده
   const renderScreen = () => {
     switch (activeTab) {
       case 'home': return <HomeScreen onNavigate={setActiveTab} />;
@@ -67,6 +55,7 @@ function App() {
       case 'tarot': return <TarotScreen />;
       case 'numerology': return <NumerologyScreen />;
       case 'chinese': return <ChineseScreen />;
+      case 'profile': return <ProfileScreen />;
     }
   };
 

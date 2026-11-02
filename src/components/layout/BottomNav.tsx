@@ -1,6 +1,6 @@
-import { Home, Sparkles, Star, Hash, Compass } from 'lucide-react';
+import { Home, Sparkles, Star, Hash, Compass, User } from 'lucide-react';
 
-export type TabId = 'home' | 'chart' | 'tarot' | 'numerology' | 'chinese';
+export type TabId = 'home' | 'chart' | 'tarot' | 'numerology' | 'chinese' | 'profile';
 
 interface BottomNavProps {
   active: TabId;
@@ -12,7 +12,8 @@ const TABS: { id: TabId; label: string; Icon: typeof Home }[] = [
   { id: 'chart', label: 'چارت', Icon: Compass },
   { id: 'tarot', label: 'تاروت', Icon: Sparkles },
   { id: 'numerology', label: 'اعداد', Icon: Hash },
-  { id: 'chinese', label: 'چینی', Icon: Star }
+  { id: 'chinese', label: 'چینی', Icon: Star },
+  { id: 'profile', label: 'پروفایل', Icon: User }
 ];
 
 export function BottomNav({ active, onChange }: BottomNavProps) {
@@ -21,7 +22,7 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
       className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-[var(--luma-border)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="max-w-md mx-auto flex items-center justify-around h-16 px-2">
+      <div className="max-w-md mx-auto flex items-center justify-around h-16 px-1">
         {TABS.map(({ id, label, Icon }) => {
           const isActive = active === id;
           return (
@@ -44,7 +45,7 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
                 )}
                 <Icon className="w-5 h-5 relative" strokeWidth={isActive ? 2.2 : 1.6} />
               </div>
-              <span className={'text-[10px] font-medium ' + (isActive ? 'opacity-100' : 'opacity-70')}>
+              <span className={'text-[9px] font-medium ' + (isActive ? 'opacity-100' : 'opacity-70')}>
                 {label}
               </span>
             </button>
