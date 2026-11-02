@@ -112,7 +112,13 @@ describe('constants', () => {
     expect(ABJAD_TABLE['غ']).toBe(1000);
   });
 
-  it('NUMBER_MEANINGS has 9 entries', () => {
-    expect(NUMBER_MEANINGS).toHaveLength(9);
+  it('NUMBER_MEANINGS has 12 entries (1-9 + master 11, 22, 33)', () => {
+    expect(NUMBER_MEANINGS).toHaveLength(12);
+  });
+
+  it('includes master numbers 11, 22, 33', () => {
+    expect(getNumberMeaning(11)).toBeDefined();
+    expect(getNumberMeaning(22)).toBeDefined();
+    expect(getNumberMeaning(33)).toBeDefined();
   });
 });
