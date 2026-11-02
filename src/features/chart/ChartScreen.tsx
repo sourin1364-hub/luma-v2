@@ -7,19 +7,21 @@ import { TimePicker, type TimeValue } from '../../components/ui/TimePicker';
 import { CityPicker } from '../../components/ui/CityPicker';
 import { ChartWheel } from '../../components/ui/ChartWheel';
 import { ChartInterpretation } from '../../components/ui/ChartInterpretation';
-import { MapPin, Clock, Calendar, Sparkles, Loader2 } from 'lucide-react';
+import { MapPin, Clock, Calendar, Sparkles, Loader2, CheckCircle2 } from 'lucide-react';
 import { birthToUtc } from '../../engines/calendar/timezone';
 import { calculateNatalChart } from '../../engines/astronomy/chart';
 import { PLANET_NAMES_FA } from '../../engines/astronomy/constants';
 import type { NatalChart, PlanetName } from '../../engines/astronomy/types';
 import type { CityWithProvince } from '../../engines/location';
+import { saveChart } from './chartService';
+import { formatJalaaliDate } from '../../engines/calendar/format';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const PLANET_ORDER: PlanetName[] = [
   'sun', 'moon', 'mercury', 'venus', 'mars',
   'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'
 ];
 
-// شهر پیش‌فرض: تهران
 const DEFAULT_CITY: CityWithProvince = {
   id: 0,
   name: 'تهران',
@@ -32,6 +34,7 @@ const DEFAULT_CITY: CityWithProvince = {
 };
 
 export function ChartScreen() {
+  const user = useAuthStore((s) => s.user);
   const [birthDate, setBirthDate] = useState<JalaaliDateValue>({
     year: 1364,
     month: 4,
@@ -45,6 +48,7 @@ export function ChartScreen() {
   const [chart, setChart] = useState<NatalChart | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   const handleCalculate = async () => {
     if (!city) {
@@ -53,6 +57,7 @@ export function ChartScreen() {
     }
     setIsCalculating(true);
     setError(null);
+    setSaved(false);
     try {
       const utcDate = birthToUtc(
         { year: birthDate.year, month: birthDate.month, day: birthDate.day },
@@ -62,6 +67,16 @@ export function ChartScreen() {
       );
       const result = calculateNatalChart(utcDate, city.lat, city.lon);
       setChart(result);
+
+      // ذخیره خودکار در Supabase
+      if (user) {
+        try {
+          await saveChart(user.id, birthDate, birthTime, city, result);
+          setSaved(true);
+        } catch (saveErr) {
+          console.error('Save chart error:', saveErr);
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در محاسبه چارت');
     } finally {
@@ -72,6 +87,7 @@ export function ChartScreen() {
   const handleReset = () => {
     setChart(null);
     setError(null);
+    setSaved(false);
   };
 
   if (chart && city) {
@@ -83,7 +99,7 @@ export function ChartScreen() {
       <div className="space-y-5">
         <PageHeader
           title="چارت تولد شما"
-          subtitle={`${birthDate.day}/${birthDate.month}/${birthDate.year} — ${birthTime.hour}:${String(birthTime.minute).padStart(2, '0')} — ${city.name}`}
+          subtitle={`${formatJalaaliDate({ year: birthDate.year, month: birthDate.month, day: birthDate.day })} — ${birthTime.hour}:${String(birthTime.minute).padStart(2, '0')} — ${city.name}`}
           action={
             <Button variant="ghost" size="sm" onClick={handleReset}>
               ویرایش
@@ -92,6 +108,12 @@ export function ChartScreen() {
         />
 
         <Card variant="glass" padding="md">
+          {saved && (
+            <div className="mb-3 flex items-center justify-center gap-1.5 text-xs text-green-400">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              چارت در حساب شما ذخیره شد
+            </div>
+          )}
           <ChartWheel chart={chart} size={340} />
         </Card>
 
