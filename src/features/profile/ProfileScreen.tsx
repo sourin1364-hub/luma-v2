@@ -6,7 +6,10 @@ import { DatePickerJalaali, type JalaaliDateValue } from '../../components/ui/Da
 import { TimePicker, type TimeValue } from '../../components/ui/TimePicker';
 import { CityPicker } from '../../components/ui/CityPicker';
 import { AvatarPicker } from './AvatarPicker';
-import { LogOut, Save, Loader2, User, Calendar, Heart, Star, Gem } from 'lucide-react';
+import { SubscriptionScreen } from '../subscription/SubscriptionScreen';
+import { SubscriptionBadge } from '../subscription/SubscriptionBadge';
+import { useSubscription } from '../../hooks/useSubscription';
+import { LogOut, Save, Loader2, User, Calendar, Heart, Star, Crown } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
   getProfile, updateProfile, getBirthProfile, saveBirthProfile,
@@ -23,6 +26,7 @@ const ELEMENT_COLORS: Record<string, string> = {
 export function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const subscription = useSubscription();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [displayName, setDisplayName] = useState('');
@@ -36,6 +40,7 @@ export function ProfileScreen() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [zodiacInfo, setZodiacInfo] = useState<any>(null);
   const [birthstoneInfo, setBirthstoneInfo] = useState<any>(null);
+  const [showSubscription, setShowSubscription] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -63,7 +68,6 @@ export function ProfileScreen() {
               timezone: b.timezone,
             });
           }
-          // محاسبه برج و سنگ از تاریخ تولد
           try {
             const z = getZodiacFromBirthDate({ year: b.year, month: b.month, day: b.day });
             const st = getBirthstoneFromBirthDate({ year: b.year, month: b.month, day: b.day });
@@ -119,7 +123,6 @@ export function ProfileScreen() {
         };
         await saveBirthProfile(user.id, birthData);
 
-        // به‌روزرسانی برج و سنگ
         try {
           const z = getZodiacFromBirthDate(birthDate);
           const st = getBirthstoneFromBirthDate(birthDate);
@@ -147,6 +150,10 @@ export function ProfileScreen() {
     }
   };
 
+  if (showSubscription) {
+    return <SubscriptionScreen onBack={() => setShowSubscription(false)} />;
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -159,18 +166,40 @@ export function ProfileScreen() {
     <div className="space-y-5">
       <PageHeader title="پروفایل من" subtitle="اطلاعات شخصی و تولد" />
 
-      {/* آواتار */}
       <Card variant="elevated" padding="lg" className="text-center">
         <AvatarPicker
           currentUrl={profile?.avatarUrl || null}
           onSelect={handleAvatarUpload}
           isLoading={isUploadingAvatar}
         />
-        <h2 className="font-heading text-lg text-[var(--luma-text)] mt-4">{displayName}</h2>
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <h2 className="font-heading text-lg text-[var(--luma-text)]">{displayName}</h2>
+          <SubscriptionBadge
+            plan={subscription.plan}
+            isAdmin={subscription.isAdmin}
+            expiresAt={subscription.expiresAt}
+            variant="compact"
+          />
+        </div>
         <p className="text-xs text-[var(--luma-text-muted)] mt-1" dir="ltr">{user?.email}</p>
       </Card>
 
-      {/* کارت برج و سنگ */}
+      {/* کارت وضعیت اشتراک */}
+      {!subscription.isLoading && (
+        <Card variant="elevated" padding="md">
+          <div className="flex items-center gap-2 mb-3">
+            <Crown className="w-4 h-4 text-[var(--luma-gold)]" />
+            <h3 className="font-heading text-sm text-[var(--luma-text)]">وضعیت اشتراک</h3>
+          </div>
+          <SubscriptionBadge
+            plan={subscription.plan}
+            isAdmin={subscription.isAdmin}
+            expiresAt={subscription.expiresAt}
+            variant="full"
+          />
+        </Card>
+      )}
+
       {zodiacInfo && birthstoneInfo && (
         <Card variant="gold-border" padding="md">
           <div className="flex items-center gap-2 mb-3">
@@ -205,7 +234,6 @@ export function ProfileScreen() {
         </Card>
       )}
 
-      {/* اطلاعات شخصی */}
       <Card variant="elevated" padding="md">
         <div className="flex items-center gap-2 mb-3">
           <User className="w-4 h-4 text-[var(--luma-gold)]" />
@@ -220,7 +248,6 @@ export function ProfileScreen() {
         />
       </Card>
 
-      {/* اطلاعات تولد */}
       <Card variant="elevated" padding="md">
         <div className="flex items-center gap-2 mb-3">
           <Calendar className="w-4 h-4 text-[var(--luma-gold)]" />
@@ -274,6 +301,12 @@ export function ProfileScreen() {
             <><Save className="w-4 h-4" />ذخیره تغییرات</>
           )}
         </Button>
+
+        <Button variant="gold" fullWidth onClick={() => setShowSubscription(true)}>
+          <Crown className="w-4 h-4" />
+          مشاهده پلن‌های اشتراک
+        </Button>
+
         <Button variant="danger" fullWidth onClick={handleLogout}>
           <LogOut className="w-4 h-4" />خروج از حساب
         </Button>

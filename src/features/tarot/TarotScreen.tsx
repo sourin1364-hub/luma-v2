@@ -6,18 +6,20 @@ import { TarotSpreadSelector } from '../../components/tarot/TarotSpreadSelector'
 import { TarotCardDeck } from '../../components/tarot/TarotCardDeck';
 import { TarotRevealCard } from '../../components/tarot/TarotRevealCard';
 import { TarotHistoryScreen } from './TarotHistoryScreen';
-import { Sparkles, ArrowRight, History } from 'lucide-react';
+import { Sparkles, ArrowRight, History, Lock, Crown } from 'lucide-react';
 import { performReading, interpretReading } from '../../engines/tarot';
+import type { Spread, ReadingResult, ReadingInterpretation } from '../../engines/tarot';
 import { synthesizeReading } from '../../engines/tarot/interpretation/index';
 import type { ReadingSynthesis } from '../../engines/tarot/interpretation/index';
-import type { Spread, ReadingResult, ReadingInterpretation } from '../../engines/tarot';
 import { saveReading } from './tarotHistoryService';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useSubscription } from '../../hooks/useSubscription';
 
 type Step = 'select-spread' | 'ask-question' | 'select-cards' | 'result' | 'history';
 
 export function TarotScreen() {
   const user = useAuthStore((s) => s.user);
+  const subscription = useSubscription();
   const [step, setStep] = useState<Step>('select-spread');
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
   const [question, setQuestion] = useState('');
@@ -26,6 +28,9 @@ export function TarotScreen() {
   const [synthesis, setSynthesis] = useState<ReadingSynthesis | null>(null);
 
   const handleSelectSpread = (spread: Spread) => {
+    if (!subscription.canUseSpread(spread.id)) {
+      return;
+    }
     setSelectedSpread(spread);
     setStep('ask-question');
   };
@@ -35,15 +40,20 @@ export function TarotScreen() {
     setStep('select-cards');
   };
 
-  // این تابع async است تا بتوانیم await استفاده کنیم
   const handleCardsSelected = async (_indices: number[]) => {
     if (!selectedSpread) return;
     const result = performReading(selectedSpread, question);
     const interp = interpretReading(result);
-    const synth = synthesizeReading(result);
     setReading(result);
     setInterpretation(interp);
-    setSynthesis(synth);
+
+    if (subscription.canUseSynthesis()) {
+      const synth = synthesizeReading(result);
+      setSynthesis(synth);
+    } else {
+      setSynthesis(null);
+    }
+
     setStep('result');
 
     if (user) {
@@ -61,6 +71,7 @@ export function TarotScreen() {
     setQuestion('');
     setReading(null);
     setInterpretation(null);
+    setSynthesis(null);
   };
 
   if (step === 'history') {
@@ -80,7 +91,20 @@ export function TarotScreen() {
             </Button>
           }
         />
-        <TarotSpreadSelector onSelect={handleSelectSpread} />
+        {!subscription.isPremium && !subscription.isLoading && (
+          <Card variant="elevated" padding="sm" className="border-amber-500/30 bg-amber-500/5">
+            <div className="flex items-center gap-2">
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <p className="text-[10px] text-amber-400">
+                چیدمان‌های پیشرفته و تفسیر جامع LUMA مخصوص اشتراک پریمیوم است.
+              </p>
+            </div>
+          </Card>
+        )}
+        <TarotSpreadSelector
+          onSelect={handleSelectSpread}
+          canUseSpread={subscription.canUseSpread}
+        />
       </div>
     );
   }
@@ -159,8 +183,8 @@ export function TarotScreen() {
           ))}
         </div>
 
-        {/* جمع‌بندی حرفه‌ای بر اساس موتور جدید */}
-        {synthesis && (
+        {/* تحلیل جامع LUMA — فقط برای پریمیوم */}
+        {synthesis ? (
           <Card variant="gold-border" padding="md">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-heading text-base text-[var(--luma-text)]">تحلیل جامع LUMA</h3>
@@ -169,7 +193,6 @@ export function TarotScreen() {
               </span>
             </div>
 
-            {/* تم کلی */}
             <div className="flex flex-wrap gap-1 mb-3">
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)]">
                 تم: {synthesis.overallTheme}
@@ -182,19 +205,16 @@ export function TarotScreen() {
               </span>
             </div>
 
-            {/* روایت */}
             <div className="mb-3">
               <p className="text-xs text-[var(--luma-text-muted)] mb-1 font-medium">روایت فال:</p>
               <p className="text-sm text-[var(--luma-text)] leading-relaxed text-justify" dir="rtl">{synthesis.narrative}</p>
             </div>
 
-            {/* توصیه */}
             <div className="pt-3 border-t border-[var(--luma-border)] mb-3">
               <p className="text-xs text-[var(--luma-gold)] mb-1 font-medium">💡 توصیه اصلی LUMA:</p>
               <p className="text-sm text-[var(--luma-text)] leading-relaxed text-justify" dir="rtl">{synthesis.advice}</p>
             </div>
 
-            {/* هشدارها */}
             {synthesis.warnings.length > 0 && (
               <div className="pt-3 border-t border-[var(--luma-border)] mb-3">
                 <p className="text-xs text-amber-400 mb-1 font-medium">⚠️ هشدارها:</p>
@@ -206,7 +226,6 @@ export function TarotScreen() {
               </div>
             )}
 
-            {/* affirmations */}
             {synthesis.affirmations.length > 0 && (
               <div className="pt-3 border-t border-[var(--luma-border)]">
                 <p className="text-xs text-[var(--luma-gold)] mb-1 font-medium">✨ جملات تاکیدی:</p>
@@ -217,6 +236,20 @@ export function TarotScreen() {
                 </ul>
               </div>
             )}
+          </Card>
+        ) : (
+          <Card variant="elevated" padding="md" className="border-amber-500/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Lock className="w-4 h-4 text-amber-400" />
+              <h3 className="font-heading text-sm text-[var(--luma-text)]">تحلیل جامع LUMA</h3>
+            </div>
+            <p className="text-xs text-[var(--luma-text-muted)] mb-3">
+              تفسیر جامع و موقعیت‌محور با تحلیل تم، عنصر غالب و توصیه اختصاصی، مخصوص اشتراک پریمیوم است.
+            </p>
+            <Button variant="gold" size="sm" onClick={() => { /* TODO: رفتن به صفحه اشتراک */ }}>
+              <Crown className="w-3 h-3" />
+              ارتقا به پریمیوم
+            </Button>
           </Card>
         )}
 
