@@ -7,7 +7,8 @@ import { TimePicker, type TimeValue } from '../../components/ui/TimePicker';
 import { CityPicker } from '../../components/ui/CityPicker';
 import { ChartWheel } from '../../components/ui/ChartWheel';
 import { ChartInterpretation } from '../../components/ui/ChartInterpretation';
-import { MapPin, Clock, Calendar, Sparkles, Loader2, CheckCircle2 } from 'lucide-react';
+import { ZodiacScreen } from './ZodiacScreen';
+import { MapPin, Clock, Calendar, Sparkles, Loader2, CheckCircle2, Star } from 'lucide-react';
 import { birthToUtc } from '../../engines/calendar/timezone';
 import { calculateNatalChart } from '../../engines/astronomy/chart';
 import { PLANET_NAMES_FA } from '../../engines/astronomy/constants';
@@ -60,8 +61,6 @@ function saveState(state: ChartState) {
 
 export function ChartScreen() {
   const user = useAuthStore((s) => s.user);
-
-  // بارگذاری اولیه از sessionStorage
   const savedState = loadState();
 
   const [birthDate, setBirthDate] = useState<JalaaliDateValue>(
@@ -77,8 +76,8 @@ export function ChartScreen() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [showZodiac, setShowZodiac] = useState(false);
 
-  // ذخیره خودکار در sessionStorage
   useEffect(() => {
     saveState({ birthDate, birthTime, city, chart });
   }, [birthDate, birthTime, city, chart]);
@@ -123,6 +122,11 @@ export function ChartScreen() {
     sessionStorage.removeItem(STORAGE_KEY);
   };
 
+  // صفحه زودیاک
+  if (showZodiac) {
+    return <ZodiacScreen onBack={() => setShowZodiac(false)} />;
+  }
+
   if (chart && city) {
     const sortedPlanets = PLANET_ORDER
       .map(name => chart.planets.find(p => p.planet === name))
@@ -134,9 +138,15 @@ export function ChartScreen() {
           title="چارت تولد شما"
           subtitle={`${formatJalaaliDate({ year: birthDate.year, month: birthDate.month, day: birthDate.day })} — ${birthTime.hour}:${String(birthTime.minute).padStart(2, '0')} — ${city.name}`}
           action={
-            <Button variant="ghost" size="sm" onClick={handleReset}>
-              ویرایش
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => setShowZodiac(true)}>
+                <Star className="w-4 h-4" />
+                زودیاک
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleReset}>
+                ویرایش
+              </Button>
+            </div>
           }
         />
 
@@ -171,7 +181,16 @@ export function ChartScreen() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="چارت تولد" subtitle="اطلاعات تولد خود را وارد کنید" />
+      <PageHeader
+        title="چارت تولد"
+        subtitle="اطلاعات تولد خود را وارد کنید"
+        action={
+          <Button variant="ghost" size="sm" onClick={() => setShowZodiac(true)}>
+            <Star className="w-4 h-4" />
+            زودیاک
+          </Button>
+        }
+      />
 
       <Card variant="elevated" padding="md">
         <div className="flex items-center gap-2 mb-3">

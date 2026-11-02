@@ -122,3 +122,16 @@ body {
     scroll-behavior: auto !important;
   }
 }
+/* ============================================
+   Zodiac Icons
+   ============================================ */
+
+/* در تم تاریک: آیکون‌های SVG مشکی را به سفید/طلایی تبدیل می‌کند */
+.dark .zodiac-icon {
+  filter: invert(1) brightness(0.9) sepia(0.3) saturate(1.5) hue-rotate(10deg) drop-shadow(0 0 3px rgba(214, 181, 109, 0.6));
+}
+
+/* در تم روشن: آیکون‌ها مشکی باقی می‌مانند */
+.zodiac-icon {
+  filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+}

@@ -5,13 +5,17 @@ import { Button } from '../../components/ui/Button';
 import { TarotSpreadSelector } from '../../components/tarot/TarotSpreadSelector';
 import { TarotCardDeck } from '../../components/tarot/TarotCardDeck';
 import { TarotRevealCard } from '../../components/tarot/TarotRevealCard';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { TarotHistoryScreen } from './TarotHistoryScreen';
+import { Sparkles, ArrowRight, History } from 'lucide-react';
 import { performReading, interpretReading } from '../../engines/tarot';
 import type { Spread, ReadingResult, ReadingInterpretation } from '../../engines/tarot';
+import { saveReading } from './tarotHistoryService';
+import { useAuthStore } from '../../store/useAuthStore';
 
-type Step = 'select-spread' | 'ask-question' | 'select-cards' | 'result';
+type Step = 'select-spread' | 'ask-question' | 'select-cards' | 'result' | 'history';
 
 export function TarotScreen() {
+  const user = useAuthStore((s) => s.user);
   const [step, setStep] = useState<Step>('select-spread');
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
   const [question, setQuestion] = useState('');
@@ -28,14 +32,22 @@ export function TarotScreen() {
     setStep('select-cards');
   };
 
-  const handleCardsSelected = (_indices: number[]) => {
+  // این تابع async است تا بتوانیم await استفاده کنیم
+  const handleCardsSelected = async (_indices: number[]) => {
     if (!selectedSpread) return;
-    // از performReading استفاده می‌کنیم (کارت‌ها با crypto انتخاب می‌شوند)
     const result = performReading(selectedSpread, question);
     const interp = interpretReading(result);
     setReading(result);
     setInterpretation(interp);
     setStep('result');
+
+    if (user) {
+      try {
+        await saveReading(user.id, result, interp);
+      } catch (saveErr) {
+        console.error('Save reading error:', saveErr);
+      }
+    }
   };
 
   const handleReset = () => {
@@ -46,17 +58,28 @@ export function TarotScreen() {
     setInterpretation(null);
   };
 
-  // مرحله ۱: انتخاب چیدمان
+  if (step === 'history') {
+    return <TarotHistoryScreen onBack={() => setStep('select-spread')} />;
+  }
+
   if (step === 'select-spread') {
     return (
       <div className="space-y-5">
-        <PageHeader title="تاروت" subtitle="چیدمان مورد نظر خود را انتخاب کنید" />
+        <PageHeader
+          title="تاروت"
+          subtitle="چیدمان مورد نظر خود را انتخاب کنید"
+          action={
+            <Button variant="ghost" size="sm" onClick={() => setStep('history')}>
+              <History className="w-4 h-4" />
+              تاریخچه
+            </Button>
+          }
+        />
         <TarotSpreadSelector onSelect={handleSelectSpread} />
       </div>
     );
   }
 
-  // مرحله ۲: پرسش
   if (step === 'ask-question' && selectedSpread) {
     return (
       <div className="space-y-5">
@@ -92,7 +115,6 @@ export function TarotScreen() {
     );
   }
 
-  // مرحله ۳: انتخاب کارت از دسته
   if (step === 'select-cards' && selectedSpread) {
     return (
       <div className="space-y-5">
@@ -109,7 +131,6 @@ export function TarotScreen() {
     );
   }
 
-  // مرحله ۴: نتیجه
   if (step === 'result' && reading && interpretation && selectedSpread) {
     return (
       <div className="space-y-5">
@@ -119,7 +140,6 @@ export function TarotScreen() {
           onBack={handleReset}
         />
 
-        {/* کارت‌ها با انیمیشن برگردان */}
         <div className="space-y-6">
           {interpretation.cards.map((cardInterp, idx) => (
             <TarotRevealCard
@@ -134,7 +154,6 @@ export function TarotScreen() {
           ))}
         </div>
 
-        {/* خلاصه */}
         <Card variant="gold-border" padding="md">
           <h3 className="font-heading text-base text-[var(--luma-text)] mb-2">جمع‌بندی</h3>
           <p className="text-sm text-[var(--luma-text-muted)] leading-relaxed mb-3">
