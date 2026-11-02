@@ -4,6 +4,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { DatePickerJalaali, type JalaaliDateValue } from '../../components/ui/DatePickerJalaali';
 import { TimePicker, type TimeValue } from '../../components/ui/TimePicker';
+import { CityPicker } from '../../components/ui/CityPicker';
 import { ChartWheel } from '../../components/ui/ChartWheel';
 import { ChartInterpretation } from '../../components/ui/ChartInterpretation';
 import { MapPin, Clock, Calendar, Sparkles, Loader2 } from 'lucide-react';
@@ -11,18 +12,24 @@ import { birthToUtc } from '../../engines/calendar/timezone';
 import { calculateNatalChart } from '../../engines/astronomy/chart';
 import { PLANET_NAMES_FA } from '../../engines/astronomy/constants';
 import type { NatalChart, PlanetName } from '../../engines/astronomy/types';
-
-const TEHRAN = {
-  city: 'تهران',
-  lat: 35.7,
-  lon: 51.4,
-  tz: 'Asia/Tehran'
-};
+import type { CityWithProvince } from '../../engines/location';
 
 const PLANET_ORDER: PlanetName[] = [
   'sun', 'moon', 'mercury', 'venus', 'mars',
   'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'
 ];
+
+// شهر پیش‌فرض: تهران
+const DEFAULT_CITY: CityWithProvince = {
+  id: 0,
+  name: 'تهران',
+  en_name: 'Tehran',
+  province_id: 1,
+  lat: 35.6892,
+  lon: 51.389,
+  province_name: 'تهران',
+  timezone: 'Asia/Tehran'
+};
 
 export function ChartScreen() {
   const [birthDate, setBirthDate] = useState<JalaaliDateValue>({
@@ -34,12 +41,16 @@ export function ChartScreen() {
     hour: 14,
     minute: 30
   });
-  const [city, setCity] = useState(TEHRAN.city);
+  const [city, setCity] = useState<CityWithProvince | null>(DEFAULT_CITY);
   const [chart, setChart] = useState<NatalChart | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleCalculate = async () => {
+    if (!city) {
+      setError('لطفاً شهر تولد را انتخاب کنید');
+      return;
+    }
     setIsCalculating(true);
     setError(null);
     try {
@@ -47,9 +58,9 @@ export function ChartScreen() {
         { year: birthDate.year, month: birthDate.month, day: birthDate.day },
         birthTime.hour,
         birthTime.minute,
-        TEHRAN.tz
+        city.timezone || 'Asia/Tehran'
       );
-      const result = calculateNatalChart(utcDate, TEHRAN.lat, TEHRAN.lon);
+      const result = calculateNatalChart(utcDate, city.lat, city.lon);
       setChart(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در محاسبه چارت');
@@ -63,7 +74,7 @@ export function ChartScreen() {
     setError(null);
   };
 
-  if (chart) {
+  if (chart && city) {
     const sortedPlanets = PLANET_ORDER
       .map(name => chart.planets.find(p => p.planet === name))
       .filter((p): p is NonNullable<typeof p> => p !== undefined);
@@ -72,7 +83,7 @@ export function ChartScreen() {
       <div className="space-y-5">
         <PageHeader
           title="چارت تولد شما"
-          subtitle={`${birthDate.day}/${birthDate.month}/${birthDate.year} — ${birthTime.hour}:${String(birthTime.minute).padStart(2, '0')} — ${city}`}
+          subtitle={`${birthDate.day}/${birthDate.month}/${birthDate.year} — ${birthTime.hour}:${String(birthTime.minute).padStart(2, '0')} — ${city.name}`}
           action={
             <Button variant="ghost" size="sm" onClick={handleReset}>
               ویرایش
@@ -84,10 +95,8 @@ export function ChartScreen() {
           <ChartWheel chart={chart} size={340} />
         </Card>
 
-        {/* تفسیر */}
         <ChartInterpretation chart={chart} />
 
-        {/* جدول سیارات */}
         <Card variant="elevated" padding="md">
           <h3 className="font-heading text-lg text-[var(--luma-text)] mb-3">موقعیت سیارات</h3>
           <div className="space-y-2 text-sm">
@@ -112,7 +121,7 @@ export function ChartScreen() {
       <Card variant="elevated" padding="md">
         <div className="flex items-center gap-2 mb-3">
           <Calendar className="w-4 h-4 text-[var(--luma-gold)]" />
-          <h3 className="font-medium text-sm text-[var(--luma-text)]">تاریخ تولد (شمسی)</h3>
+          <h3 className="font-heading text-sm text-[var(--luma-text)]">تاریخ تولد (شمسی)</h3>
         </div>
         <DatePickerJalaali value={birthDate} onChange={setBirthDate} />
       </Card>
@@ -120,7 +129,7 @@ export function ChartScreen() {
       <Card variant="elevated" padding="md">
         <div className="flex items-center gap-2 mb-3">
           <Clock className="w-4 h-4 text-[var(--luma-gold)]" />
-          <h3 className="font-medium text-sm text-[var(--luma-text)]">ساعت تولد</h3>
+          <h3 className="font-heading text-sm text-[var(--luma-text)]">ساعت تولد</h3>
         </div>
         <TimePicker value={birthTime} onChange={setBirthTime} />
       </Card>
@@ -128,18 +137,9 @@ export function ChartScreen() {
       <Card variant="elevated" padding="md">
         <div className="flex items-center gap-2 mb-3">
           <MapPin className="w-4 h-4 text-[var(--luma-gold)]" />
-          <h3 className="font-medium text-sm text-[var(--luma-text)]">محل تولد</h3>
+          <h3 className="font-heading text-sm text-[var(--luma-text)]">شهر تولد</h3>
         </div>
-        <input
-          type="text"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="نام شهر..."
-          className="w-full px-4 py-3 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] transition-colors"
-        />
-        <p className="text-[10px] text-[var(--luma-text-subtle)] mt-2">
-          برای MVP، محاسبه با مختصات تهران انجام می‌شود
-        </p>
+        <CityPicker value={city} onChange={setCity} />
       </Card>
 
       {error && (
@@ -153,7 +153,7 @@ export function ChartScreen() {
         fullWidth
         size="lg"
         onClick={handleCalculate}
-        disabled={isCalculating}
+        disabled={isCalculating || !city}
       >
         {isCalculating ? (
           <>
