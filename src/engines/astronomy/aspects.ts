@@ -1,4 +1,4 @@
-import type { Aspect, AspectType, PlanetName, PlanetPosition } from './types';
+import type { Aspect, AspectType, PlanetPosition } from './types';
 
 const ASPECT_ANGLES: Record<AspectType, number> = {
   conjunction: 0,

@@ -24,7 +24,11 @@ export function PageHeader({ title, subtitle, onBack, action }: PageHeaderProps)
           {title}
         </h1>
         {subtitle && (
-          <p className="text-sm text-[var(--luma-text-muted)] mt-0.5 truncate">
+          <p
+            className="text-sm text-[var(--luma-text-muted)] mt-0.5 truncate"
+            dir="rtl"
+            style={{ unicodeBidi: 'plaintext' }}
+          >
             {subtitle}
           </p>
         )}

@@ -6,7 +6,7 @@ import { DatePickerJalaali, type JalaaliDateValue } from '../../components/ui/Da
 import { Hash, Sparkles, Loader2 } from 'lucide-react';
 import { calculateAbjad, calculateLifePath, getNumberMeaning } from '../../engines/numerology';
 import { jalaaliToGregorian } from '../../engines/calendar/jalaali';
-import { toPersianDigits } from '../../engines/calendar/format';
+import { toPersianDigits, formatJalaaliDate } from '../../engines/calendar/format';
 
 export function NumerologyScreen() {
   const [fullName, setFullName] = useState('');
@@ -79,12 +79,18 @@ export function NumerologyScreen() {
     </div>
   );
 
+  const formattedBirthDate = formatJalaaliDate({
+    year: birthDate.year,
+    month: birthDate.month,
+    day: birthDate.day
+  });
+
   if (results) {
     return (
       <div className="space-y-5">
         <PageHeader
           title="تفسیر اعداد شما"
-          subtitle={`${fullName} — ${toPersianDigits(birthDate.day)}/${toPersianDigits(birthDate.month)}/${toPersianDigits(birthDate.year)}`}
+          subtitle={`${fullName} — ${formattedBirthDate}`}
           onBack={handleReset}
         />
 

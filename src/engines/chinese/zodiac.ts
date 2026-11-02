@@ -28,7 +28,7 @@ export function getChineseYear(gregorianYear: number, gregorianMonth: number, gr
     // اگر تاریخ سال نو موجود نبود، فرض می‌کنیم بعد از فوریه است
     return gregorianMonth > 2 ? gregorianYear : gregorianYear - 1;
   }
-  const [ny, nm, nd] = newYearStr.split('-').map(Number);
+  const [, nm, nd] = newYearStr.split('-').map(Number);
   const isBeforeNewYear =
     gregorianMonth < nm ||
     (gregorianMonth === nm && gregorianDay < nd);

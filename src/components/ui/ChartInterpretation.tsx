@@ -1,4 +1,4 @@
-import type { NatalChart, PlanetPosition, Element } from '../../engines/astronomy/types';
+import type { NatalChart, Element } from '../../engines/astronomy/types';
 import { ZODIAC_SIGNS, PLANET_NAMES_FA } from '../../engines/astronomy/constants';
 import { Card } from './Card';
 

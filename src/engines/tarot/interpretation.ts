@@ -1,4 +1,4 @@
-import type { TarotCard, ReadingResult, Spread } from './types';
+import type { TarotCard, ReadingResult } from './types';
 import { getCardById } from './index';
 import { getSpreadById } from './spreads';
 

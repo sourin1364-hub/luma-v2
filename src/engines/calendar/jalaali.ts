@@ -1,4 +1,4 @@
-import { toJalaali, toGregorian, isLeapJalaaliYear, jalaaliMonthLength } from 'jalaali-js';
+import { toJalaali, toGregorian, isLeapJalaaliYear, jalaaliMonthLength } from './jalaali-core';
 import type { JalaaliDate, GregorianDate, MonthInfo } from './types';
 import { MONTH_NAMES_FA } from './types';
 
