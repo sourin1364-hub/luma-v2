@@ -1,6 +1,21 @@
-import { SPREADS } from '../../engines/tarot/spreads';
+﻿import { SPREADS } from '../../engines/tarot/spreads';
 import { type Spread } from '../../engines/tarot/types';
-import { Sparkles, Clock, ArrowRight, Layers, HelpCircle, Heart, Cross, Moon, Users, Briefcase, Calendar, Lock } from 'lucide-react';
+import {
+  Sparkles,
+  Clock,
+  ArrowRight,
+  Layers,
+  HelpCircle,
+  Heart,
+  Cross,
+  Moon,
+  Users,
+  Briefcase,
+  Calendar,
+  CalendarDays,
+  CalendarRange,
+  Lock,
+} from 'lucide-react';
 
 interface TarotSpreadSelectorProps {
   onSelect: (spread: Spread) => void;
@@ -9,6 +24,8 @@ interface TarotSpreadSelectorProps {
 
 const SPREAD_ICONS: Record<string, typeof Sparkles> = {
   'daily-card': Sparkles,
+  'weekly': CalendarDays,
+  'monthly': CalendarRange,
   'single-card': HelpCircle,
   'past-present-future': Clock,
   'situation-obstacle-advice': Layers,
@@ -18,8 +35,10 @@ const SPREAD_ICONS: Record<string, typeof Sparkles> = {
   'horseshoe': Moon,
   'relationship': Users,
   'career': Briefcase,
-  'yearly': Calendar
+  'yearly': Calendar,
 };
+
+const PRO_SPREAD_IDS = ['celtic-cross', 'yearly'];
 
 export function TarotSpreadSelector({ onSelect, canUseSpread }: TarotSpreadSelectorProps) {
   return (
@@ -27,21 +46,24 @@ export function TarotSpreadSelector({ onSelect, canUseSpread }: TarotSpreadSelec
       {SPREADS.map((spread) => {
         const Icon = SPREAD_ICONS[spread.id] || Sparkles;
         const allowed = canUseSpread(spread.id);
+        const isProTier = PRO_SPREAD_IDS.includes(spread.id);
+
         return (
           <button
             key={spread.id}
-            onClick={() => allowed && onSelect(spread)}
-            disabled={!allowed}
+            type="button"
+            onClick={() => onSelect(spread)}
             className={
               'text-right p-4 rounded-2xl bg-[var(--luma-bg-elevated)] border transition-all duration-300 relative ' +
               (allowed
                 ? 'border-[var(--luma-border)] hover:border-[var(--luma-gold)] hover:scale-[1.02] active:scale-[0.98]'
-                : 'border-amber-500/30 opacity-70 cursor-not-allowed')
+                : 'border-amber-500/40 opacity-85 hover:opacity-100 hover:border-amber-400')
             }
           >
             {!allowed && (
-              <span className="absolute top-2 left-2">
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
+              <span className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] text-amber-400 font-bold">
+                <Lock className="w-3 h-3" />
+                {isProTier ? 'حرفه‌ای' : 'پریمیوم'}
               </span>
             )}
             <Icon className="w-6 h-6 text-[var(--luma-gold)] mb-2" />
@@ -52,7 +74,11 @@ export function TarotSpreadSelector({ onSelect, canUseSpread }: TarotSpreadSelec
             <div className="flex items-center gap-1 text-[10px] text-[var(--luma-gold)]">
               <span>{spread.cardCount}</span>
               <span>کارت</span>
-              {!allowed && <span className="mr-auto text-amber-400">پریمیوم</span>}
+              {!allowed && (
+                <span className="mr-auto text-[10px] text-amber-400 underline">
+                  فعالسازی اشتراک
+                </span>
+              )}
             </div>
           </button>
         );

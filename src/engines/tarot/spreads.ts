@@ -1,28 +1,55 @@
-import type { Spread } from './types';
+﻿import type { Spread } from './types';
 
 export const SPREADS: Spread[] = [
   {
     id: 'daily-card',
     nameFa: 'کارت روزانه',
-    description: 'یک کارت برای انرژی و پیام امروز.',
+    description: 'یک کارت برای دریافت انرژی و پیام اصلی امروز.',
     cardCount: 1,
     positions: [
-      { index: 0, nameFa: 'کارت روز', description: 'انرژی و پیام اصلی امروز' }
+      { index: 0, nameFa: 'کارت روز', description: 'انرژی و پیام اصلی امروز برای شما' }
+    ]
+  },
+  {
+    id: 'weekly',
+    nameFa: 'فال هفتگی',
+    description: 'هفت کارت برای بررسی روند انرژی و رویدادهای ۷ روز پیش رو.',
+    cardCount: 7,
+    positions: [
+      { index: 0, nameFa: 'شنبه (آغاز هفته)', description: 'انرژی شروع هفته و اولویت اصلی' },
+      { index: 1, nameFa: 'یکشنبه', description: 'مسیر ارتباطات و جریان روز دوم' },
+      { index: 2, nameFa: 'دوشنبه', description: 'احساسات درونی و فضای ذهنی' },
+      { index: 3, nameFa: 'سه‌شنبه', description: 'اقدام، انگیزه و چالش میانه هفته' },
+      { index: 4, nameFa: 'چهارشنبه', description: 'فرصت‌های شغلی، مالی و فکری' },
+      { index: 5, nameFa: 'پنج‌شنبه', description: 'دستاوردها و جمع‌بندی کارهای هفته' },
+      { index: 6, nameFa: 'جمعه (پایان هفته)', description: 'آرامش، روابط عاطفی و پیام پایانی هفته' }
+    ]
+  },
+  {
+    id: 'monthly',
+    nameFa: 'فال ماهانه',
+    description: 'چهار کارت برای تحلیل عمیق ۴ هفته پیش رو در ماه جاری.',
+    cardCount: 4,
+    positions: [
+      { index: 0, nameFa: 'هفته اول', description: 'انرژی آغازین ماه و موضوع محوری هفته اول' },
+      { index: 1, nameFa: 'هفته دوم', description: 'روند گسترش موضوعات و چالش‌های هفته دوم' },
+      { index: 2, nameFa: 'هفته سوم', description: 'نقطه اوج تصمیم‌گیری و فرصت‌های هفته سوم' },
+      { index: 3, nameFa: 'هفته چهارم', description: 'جمع‌بندی، ثمره تلاش‌ها و پیام پایانی ماه' }
     ]
   },
   {
     id: 'single-card',
-    nameFa: 'تک‌کارتی',
-    description: 'یک کارت برای پاسخ به یک پرسش مشخص.',
+    nameFa: 'تک‌کارتی (نیت مشخص)',
+    description: 'یک کارت برای پاسخ مستقیم به یک پرسش مشخص.',
     cardCount: 1,
     positions: [
-      { index: 0, nameFa: 'پاسخ', description: 'پاسخ یا راهنمایی برای پرسش شما' }
+      { index: 0, nameFa: 'پاسخ', description: 'پاسخ یا راهنمایی مستقیم برای پرسش شما' }
     ]
   },
   {
     id: 'past-present-future',
     nameFa: 'گذشته، حال، آینده',
-    description: 'سه کارت برای بررسی روند یک موقعیت در زمان.',
+    description: 'سه کارت برای بررسی روند یک موقعیت در گذر زمان.',
     cardCount: 3,
     positions: [
       { index: 0, nameFa: 'گذشته', description: 'ریشه‌ها و عواملی که به وضعیت فعلی منجر شده‌اند' },
@@ -33,7 +60,7 @@ export const SPREADS: Spread[] = [
   {
     id: 'situation-obstacle-advice',
     nameFa: 'وضعیت، مانع، راهکار',
-    description: 'سه کارت برای شناخت وضعیت، مانع و راه پیشنهادی.',
+    description: 'سه کارت برای شناخت وضعیت، مانع پنهان و راه پیشنهادی.',
     cardCount: 3,
     positions: [
       { index: 0, nameFa: 'وضعیت', description: 'وضعیت فعلی و انرژی حاکم' },
@@ -55,74 +82,74 @@ export const SPREADS: Spread[] = [
   {
     id: 'yes-no',
     nameFa: 'بله یا خیر',
-    description: 'یک کارت برای پاسخ سریع به یک پرسش بله/خیر.',
+    description: 'یک کارت برای پاسخ سریع به یک پرسش بله یا خیر.',
     cardCount: 1,
     positions: [
-      { index: 0, nameFa: 'پاسخ', description: 'پاسخ کوتاه: بله، خیر یا شاید' }
+      { index: 0, nameFa: 'پاسخ', description: 'پاسخ کوتاه: بله، خیر یا نیازمند صبر' }
     ]
   },
   {
-    id: 'celtic-cross',
-    nameFa: 'صلیب سلتیک',
-    description: 'جامع‌ترین چیدمان تاروت با ۱۰ کارت برای تحلیل عمیق یک موقعیت.',
-    cardCount: 10,
+    id: 'relationship',
+    nameFa: 'رابطه عاطفی و عشق',
+    description: 'پنج کارت برای بررسی احساس واقعی، موانع و آینده رابطه.',
+    cardCount: 5,
     positions: [
-      { index: 0, nameFa: 'وضعیت فعلی', description: 'وضعیت فعلی و انرژی حاکم بر موقعیت' },
-      { index: 1, nameFa: 'مانع', description: 'چالشی که بر وضعیت تأثیر می‌گذارد' },
-      { index: 2, nameFa: 'گذشته', description: 'ریشه‌ها و عواملی که به وضعیت فعلی منجر شده' },
-      { index: 3, nameFa: 'آینده', description: 'جهت‌گیری و نتیجه احتمالی' },
-      { index: 4, nameFa: 'هدف', description: 'هدف یا نتیجه‌ای که در آستانه آن هستید' },
-      { index: 5, nameFa: 'گذشته نزدیک', description: 'رویدادهای اخیر که تأثیرگذار بوده‌اند' },
-      { index: 6, nameFa: 'خود', description: 'نگرش و نقش شما در موقعیت' },
-      { index: 7, nameFa: 'محیط', description: 'تأثیر دیگران و محیط بر موقعیت' },
-      { index: 8, nameFa: 'امیدها و ترس‌ها', description: 'امیدها و ترس‌های شما درباره موقعیت' },
-      { index: 9, nameFa: 'نتیجه نهایی', description: 'نتیجه نهایی و پیام اصلی' }
+      { index: 0, nameFa: 'شما', description: 'احساسات و نگرش شما در رابطه' },
+      { index: 1, nameFa: 'طرف مقابل', description: 'احساسات و نیت واقعی طرف مقابل' },
+      { index: 2, nameFa: 'رابطه فعلی', description: 'وضعیت فعلی رابطه و انرژی مشترک' },
+      { index: 3, nameFa: 'مانع', description: 'چالش یا مانع اصلی رابطه' },
+      { index: 4, nameFa: 'آینده رابطه', description: 'جهت‌گیری و نتیجه احتمالی رابطه' }
+    ]
+  },
+  {
+    id: 'career',
+    nameFa: 'مسیر شغلی و مالی',
+    description: 'پنج کارت برای بررسی وضعیت شغلی، فرصت‌های مالی و موفقیت.',
+    cardCount: 5,
+    positions: [
+      { index: 0, nameFa: 'وضعیت فعلی', description: 'وضعیت فعلی شغل و جریان مالی' },
+      { index: 1, nameFa: 'مهارت‌ها و نقاط قوت', description: 'نقاط قوت و استعدادهای شما' },
+      { index: 2, nameFa: 'مانع موفقیت', description: 'چالش یا مانعی که باید برطرف شود' },
+      { index: 3, nameFa: 'فرصت پیش رو', description: 'فرصت‌های درآمدی و امکانات تازه' },
+      { index: 4, nameFa: 'نتیجه و دستاورد', description: 'نتیجه احتمالی و پیام اصلی شغلی' }
     ]
   },
   {
     id: 'horseshoe',
     nameFa: 'نعل اسب',
-    description: 'هفت کارت برای بررسی روند یک موقعیت از گذشته تا نتیجه.',
+    description: 'هفت کارت برای بررسی روند یک تصمیم مهم از گذشته تا نتیجه.',
     cardCount: 7,
     positions: [
       { index: 0, nameFa: 'گذشته', description: 'ریشه‌ها و عواملی که به وضعیت فعلی منجر شده' },
       { index: 1, nameFa: 'حال', description: 'وضعیت فعلی و انرژی حاکم' },
       { index: 2, nameFa: 'مانع', description: 'چالش یا مانعی که باید برطرف شود' },
       { index: 3, nameFa: 'راهکار', description: 'راه پیشنهادی و اقدام مناسب' },
-      { index: 4, nameFa: 'محیط', description: 'تأثیر دیگران و محیط بر موقعیت' },
-      { index: 5, nameFa: 'آینده نزدیک', description: 'جهت‌گیری و نتیجه احتمالی' },
+      { index: 4, nameFa: 'محیط و اطرافیان', description: 'تأثیر دیگران و محیط بر موقعیت' },
+      { index: 5, nameFa: 'آینده نزدیک', description: 'جهت‌گیری و گام بعدی' },
       { index: 6, nameFa: 'نتیجه نهایی', description: 'نتیجه نهایی و پیام اصلی' }
     ]
   },
   {
-    id: 'relationship',
-    nameFa: 'رابطه عاطفی',
-    description: 'پنج کارت برای بررسی وضعیت یک رابطه عاطفی.',
-    cardCount: 5,
+    id: 'celtic-cross',
+    nameFa: 'صلیب سلتیک',
+    description: 'جامع‌ترین چیدمان تاروت با ۱۰ کارت برای تحلیل عمیق زندگی.',
+    cardCount: 10,
     positions: [
-      { index: 0, nameFa: 'شما', description: 'احساسات و نگرش شما در رابطه' },
-      { index: 1, nameFa: 'طرف مقابل', description: 'احساسات و نگرش طرف مقابل' },
-      { index: 2, nameFa: 'رابطه فعلی', description: 'وضعیت فعلی رابطه و انرژی حاکم' },
-      { index: 3, nameFa: 'مانع', description: 'چالش یا مانع رابطه' },
-      { index: 4, nameFa: 'آینده رابطه', description: 'جهت‌گیری و نتیجه احتمالی رابطه' }
-    ]
-  },
-  {
-    id: 'career',
-    nameFa: 'مسیر شغلی',
-    description: 'پنج کارت برای بررسی وضعیت شغلی و مسیر حرفه‌ای.',
-    cardCount: 5,
-    positions: [
-      { index: 0, nameFa: 'وضعیت شغلی فعلی', description: 'وضعیت فعلی شغل و انرژی حاکم' },
-      { index: 1, nameFa: 'مهارت‌ها', description: 'نقاط قوت و مهارت‌های شما' },
-      { index: 2, nameFa: 'مانع', description: 'چالش یا مانعی که باید برطرف شود' },
-      { index: 3, nameFa: 'فرصت', description: 'فرصت‌ها و امکانات پیش رو' },
-      { index: 4, nameFa: 'نتیجه', description: 'نتیجه احتمالی و پیام اصلی' }
+      { index: 0, nameFa: 'وضعیت فعلی', description: 'وضعیت فعلی و انرژی حاکم بر موقعیت' },
+      { index: 1, nameFa: 'مانع متقاطع', description: 'چالشی که بر وضعیت تأثیر می‌گذارد' },
+      { index: 2, nameFa: 'ریشه و ناخودآگاه', description: 'ریشه‌ها و عواملی که به وضعیت فعلی منجر شده' },
+      { index: 3, nameFa: 'گذشته نزدیک', description: 'رویدادهای اخیری که به تازگی رخ داده‌اند' },
+      { index: 4, nameFa: 'هدف و آرمان', description: 'بهترین نتیجه‌ای که در آستانه آن هستید' },
+      { index: 5, nameFa: 'آینده نزدیک', description: 'جهت‌گیری و رویداد پیش رو' },
+      { index: 6, nameFa: 'نگرش درونی شما', description: 'نگرش و نقش شما در موقعیت' },
+      { index: 7, nameFa: 'محیط پیرامون', description: 'تأثیر دیگران و محیط بر موقعیت' },
+      { index: 8, nameFa: 'امیدها و ترس‌ها', description: 'امیدها و ترس‌های پنهان شما' },
+      { index: 9, nameFa: 'نتیجه نهایی', description: 'نتیجه نهایی و سرانجام مسیر' }
     ]
   },
   {
     id: 'yearly',
-    nameFa: 'چیدمان سالانه',
+    nameFa: 'چیدمان سالانه (۱۲ ماه)',
     description: 'دوازده کارت برای بررسی انرژی و پیام هر ماه از سال.',
     cardCount: 12,
     positions: [

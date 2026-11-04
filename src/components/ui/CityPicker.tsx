@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { MapPin, Search, Loader2, Navigation, X } from 'lucide-react';
 import { searchCities, findNearestCity } from '../../engines/location';
 import type { CityWithProvince } from '../../engines/location';
@@ -108,7 +108,7 @@ export function CityPicker({ value, onChange, placeholder = 'جستجوی شهر
               {value.name}
             </p>
             <p className="text-[10px] text-[var(--luma-text-muted)] truncate">
-              {value.province_name} — {value.lat.toFixed(3)}°, {value.lon.toFixed(3)}°
+              {value.province_name} — {Number(value.lat).toFixed(3)}°, {Number(value.lon).toFixed(3)}°
             </p>
           </div>
           <button

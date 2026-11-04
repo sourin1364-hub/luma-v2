@@ -1,8 +1,9 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { DatePickerJalaali, type JalaaliDateValue } from '../../components/ui/DatePickerJalaali';
+import { ChineseAnimalSvg } from '../../components/ui/CosmicIcons';
 import { Star, Sparkles, Loader2 } from 'lucide-react';
 import { calculateChineseZodiac } from '../../engines/chinese';
 import { jalaaliToGregorian } from '../../engines/calendar/jalaali';
@@ -13,7 +14,7 @@ export function ChineseScreen() {
   const [birthDate, setBirthDate] = useState<JalaaliDateValue>({
     year: 1364,
     month: 4,
-    day: 1
+    day: 1,
   });
   const [result, setResult] = useState<ChineseZodiacResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -26,7 +27,7 @@ export function ChineseScreen() {
       const g = jalaaliToGregorian({
         year: birthDate.year,
         month: birthDate.month,
-        day: birthDate.day
+        day: birthDate.day,
       });
       const chineseResult = calculateChineseZodiac(g.year, g.month, g.day);
       setResult(chineseResult);
@@ -44,7 +45,7 @@ export function ChineseScreen() {
 
   if (result) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-5 pb-24">
         <PageHeader
           title="زودیاک چینی شما"
           subtitle={`${toPersianDigits(birthDate.day)}/${toPersianDigits(birthDate.month)}/${toPersianDigits(birthDate.year)}`}
@@ -52,10 +53,10 @@ export function ChineseScreen() {
         />
 
         <Card variant="gold-border" padding="lg" className="text-center">
-          <div className="text-7xl mb-3" aria-hidden="true">
-            {getAnimalEmoji(result.animal)}
+          <div className="flex justify-center mb-3">
+            <ChineseAnimalSvg animal={result.animal} className="w-24 h-24" />
           </div>
-          <h2 className="font-heading text-3xl text-[var(--luma-text)] mb-1">
+          <h2 className="font-heading text-2xl text-[var(--luma-text)] mb-1">
             {result.combinedName}
           </h2>
           <p className="text-xs text-[var(--luma-text-muted)]">
@@ -68,18 +69,21 @@ export function ChineseScreen() {
             <Star className="w-4 h-4 text-[var(--luma-gold)]" />
             <h3 className="font-heading text-base text-[var(--luma-text)]">{result.animalInfo.nameFa}</h3>
           </div>
-          <p className="text-sm text-[var(--luma-text-muted)] leading-relaxed mb-3">
+          <p className="text-sm text-[var(--luma-text)] leading-relaxed mb-3 text-justify">
             {result.animalInfo.meaning}
           </p>
           <div className="flex flex-wrap gap-1 mb-3">
             {result.animalInfo.keywords.map((kw, i) => (
-              <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]">
+              <span
+                key={i}
+                className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]"
+              >
                 {kw}
               </span>
             ))}
           </div>
           <div className="pt-3 border-t border-[var(--luma-border)]">
-            <p className="text-[10px] text-[var(--luma-text-subtle)] mb-1">سال‌های این حیوان:</p>
+            <p className="text-[10px] text-[var(--luma-text-subtle)] mb-1">سال‌های این نماد:</p>
             <p className="text-xs text-[var(--luma-text-muted)]">{result.animalInfo.years}</p>
           </div>
         </Card>
@@ -88,12 +92,15 @@ export function ChineseScreen() {
           <h3 className="font-heading text-base text-[var(--luma-text)] mb-2">
             عنصر {result.elementInfo.nameFa}
           </h3>
-          <p className="text-sm text-[var(--luma-text-muted)] leading-relaxed mb-3">
+          <p className="text-sm text-[var(--luma-text)] leading-relaxed mb-3 text-justify">
             {result.elementInfo.meaning}
           </p>
           <div className="flex flex-wrap gap-1">
             {result.elementInfo.keywords.map((kw, i) => (
-              <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]">
+              <span
+                key={i}
+                className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]"
+              >
                 {kw}
               </span>
             ))}
@@ -108,8 +115,8 @@ export function ChineseScreen() {
   }
 
   return (
-    <div className="space-y-5">
-      <PageHeader title="زودیاک چینی" subtitle="حیوان و عنصر سال تولد" />
+    <div className="space-y-5 pb-24">
+      <PageHeader title="زودیاک چینی" subtitle="نماد و عنصر سال تولد" />
 
       <Card variant="elevated" padding="md">
         <h3 className="font-heading text-sm text-[var(--luma-text)] mb-3">تاریخ تولد</h3>
@@ -143,13 +150,4 @@ export function ChineseScreen() {
       </Button>
     </div>
   );
-}
-
-function getAnimalEmoji(animal: string): string {
-  const emojis: Record<string, string> = {
-    rat: '🐀', ox: '🐂', tiger: '🐅', rabbit: '🐇',
-    dragon: '🐉', snake: '🐍', horse: '🐎', goat: '🐐',
-    monkey: '🐒', rooster: '🐓', dog: '🐕', pig: '🐖'
-  };
-  return emojis[animal] || '⭐';
 }

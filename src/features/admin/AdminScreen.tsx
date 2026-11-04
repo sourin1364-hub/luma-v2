@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Loader2, Users, Crown, Shield, Search, Calendar, UserCog } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
-  getAllUsers, updateUserRole, activateSubscription, cancelSubscription,
-  type AdminUser
+  getAllUsers,
+  updateUserRole,
+  activateSubscription,
+  cancelSubscription,
+  type AdminUser,
 } from './adminService';
 import type { Plan } from '../../hooks/useSubscription';
 
@@ -29,7 +32,9 @@ const PLAN_COLORS: Record<Plan, string> = {
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
   return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric', month: 'short', day: 'numeric',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   }).format(new Date(iso));
 }
 
@@ -38,6 +43,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedDays, setSelectedDays] = useState<number>(30);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -48,14 +54,19 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
     setIsLoading(false);
   };
 
-  useEffect(() => { loadUsers(); }, []);
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
-  const handleActivate = async (userId: string, plan: Plan) => {
+  const handleActivate = async (userId: string, plan: Plan, days: number) => {
     setActionLoading(userId);
     setMessage(null);
     try {
-      await activateSubscription(userId, plan, 30);
-      setMessage({ type: 'success', text: 'اشتراک ۳۰ روزه فعال شد' });
+      await activateSubscription(userId, plan, days);
+      setMessage({
+        type: 'success',
+        text: `اشتراک ${PLAN_LABELS[plan]} به مدت ${days} روز فعال شد`,
+      });
       await loadUsers();
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'خطا' });
@@ -108,16 +119,15 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
 
   const stats = {
     total: users.length,
-    admins: users.filter(u => u.role === 'admin').length,
-    premium: users.filter(u => u.plan === 'premium').length,
-    pro: users.filter(u => u.plan === 'pro').length,
+    admins: users.filter((u) => u.role === 'admin').length,
+    premium: users.filter((u) => u.plan === 'premium').length,
+    pro: users.filter((u) => u.plan === 'pro').length,
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-24">
       <PageHeader title="پنل مدیریت" subtitle="مدیریت کاربران و اشتراک‌ها" onBack={onBack} />
 
-      {/* آمار */}
       <div className="grid grid-cols-4 gap-2">
         <Card variant="elevated" padding="sm" className="text-center">
           <Users className="w-4 h-4 text-[var(--luma-gold)] mx-auto mb-1" />
@@ -141,7 +151,33 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
         </Card>
       </div>
 
-      {/* جستجو */}
+      {/* انتخاب مدت زمان اعطای اشتراک توسط ادمین */}
+      <Card variant="elevated" padding="sm">
+        <p className="text-xs text-[var(--luma-text-muted)] mb-2">مدت فعال‌سازی دستی اشتراک:</p>
+        <div className="grid grid-cols-4 gap-1.5">
+          {[
+            { days: 30, label: '۱ ماهه' },
+            { days: 90, label: '۳ ماهه' },
+            { days: 180, label: '۶ ماهه' },
+            { days: 365, label: '۱ ساله' },
+          ].map((item) => (
+            <button
+              key={item.days}
+              type="button"
+              onClick={() => setSelectedDays(item.days)}
+              className={
+                'py-1.5 rounded-lg text-xs font-medium border transition-all ' +
+                (selectedDays === item.days
+                  ? 'bg-[var(--luma-gold)]/20 border-[var(--luma-gold)] text-[var(--luma-gold)]'
+                  : 'bg-[var(--luma-bg-subtle)] border-[var(--luma-border)] text-[var(--luma-text-muted)]')
+              }
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </Card>
+
       <div className="relative">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--luma-text-muted)]" />
         <input
@@ -154,12 +190,14 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
       </div>
 
       {message && (
-        <div className={
-          'p-2 rounded-lg text-xs text-center ' +
-          (message.type === 'success'
-            ? 'bg-green-500/10 border border-green-500/30 text-green-400'
-            : 'bg-red-500/10 border border-red-500/30 text-red-400')
-        }>
+        <div
+          className={
+            'p-2 rounded-lg text-xs text-center ' +
+            (message.type === 'success'
+              ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+              : 'bg-red-500/10 border border-red-500/30 text-red-400')
+          }
+        >
           {message.text}
         </div>
       )}
@@ -201,36 +239,56 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => handleToggleRole(u)}
                   disabled={actionLoading === u.id || u.id === currentUser?.id}
                   className="p-1.5 rounded-lg hover:bg-[var(--luma-bg-subtle)] disabled:opacity-30"
                   title={u.role === 'admin' ? 'حذف ادمین' : 'ارتقا به ادمین'}
                 >
-                  <UserCog className={'w-4 h-4 ' + (u.role === 'admin' ? 'text-amber-400' : 'text-[var(--luma-text-muted)]')} />
+                  <UserCog
+                    className={
+                      'w-4 h-4 ' +
+                      (u.role === 'admin' ? 'text-amber-400' : 'text-[var(--luma-text-muted)]')
+                    }
+                  />
                 </button>
               </div>
 
-              {/* دکمه‌های اشتراک */}
               <div className="flex flex-wrap gap-1 pt-2 border-t border-[var(--luma-border)]">
-                <Button variant="ghost" size="sm" onClick={() => handleActivate(u.id, 'premium')} disabled={actionLoading === u.id}>
-                  {actionLoading === u.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'پریمیوم ۳۰ روزه'}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleActivate(u.id, 'premium', selectedDays)}
+                  disabled={actionLoading === u.id}
+                >
+                  {actionLoading === u.id ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    `پریمیوم (${selectedDays} روز)`
+                  )}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleActivate(u.id, 'pro')} disabled={actionLoading === u.id}>
-                  حرفه‌ای ۳۰ روزه
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleActivate(u.id, 'pro', selectedDays)}
+                  disabled={actionLoading === u.id}
+                >
+                  {`حرفه‌ای (${selectedDays} روز)`}
                 </Button>
                 {u.plan !== 'free' && (
-                  <Button variant="ghost" size="sm" onClick={() => handleCancel(u.id)} disabled={actionLoading === u.id} className="text-red-400">
-                    لغو
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleCancel(u.id)}
+                    disabled={actionLoading === u.id}
+                    className="text-red-400"
+                  >
+                    لغو اشتراک
                   </Button>
                 )}
               </div>
             </Card>
           ))}
-          {filtered.length === 0 && (
-            <Card variant="elevated" padding="md" className="text-center">
-              <p className="text-xs text-[var(--luma-text-muted)]">کاربری پیدا نشد</p>
-            </Card>
-          )}
         </div>
       )}
     </div>

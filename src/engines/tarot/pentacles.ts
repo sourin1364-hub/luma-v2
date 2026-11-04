@@ -1,4 +1,4 @@
-import type { TarotCard } from './types';
+﻿import type { TarotCard } from './types';
 
 export const PENTACLES_CARDS: TarotCard[] = [
   {
@@ -8,7 +8,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 1,
-    imagePath: '/assets/tarot/cards/pentacles-01-ace.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-01-ace.webp',
     keywords: ['فرصت', 'ثروت', 'شروع مادی', 'پایداری', 'باروری'],
     upright: {
       meaning: 'فرصت و ثروت. آس سکه نماد شروع مادی و باروری است. زمانه‌ای برای سرمایه‌گذاری و پذیرش فرصت‌های جدید.',
@@ -28,7 +28,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 2,
-    imagePath: '/assets/tarot/cards/pentacles-02.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-02.webp',
     keywords: ['تعادل', 'انعطاف', 'چندوظیفگی', 'تنظیم', 'تصمیم'],
     upright: {
       meaning: 'تعادل و انعطاف. دو سکه نماد مدیریت چند کار و تنظیم منابع است. زمانه‌ای برای یافتن تعادل بین مسئولیت‌ها.',
@@ -48,7 +48,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 3,
-    imagePath: '/assets/tarot/cards/pentacles-03.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-03.webp',
     keywords: ['همکاری', 'مهارت', 'پیشرفت', 'یادگیری', 'تیم'],
     upright: {
       meaning: 'همکاری و مهارت. سه سکه نماد teamwork و پیشرفت حرفه‌ای است. زمانه‌ای برای همکاری و یادگیری مهارت‌های جدید.',
@@ -68,7 +68,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 4,
-    imagePath: '/assets/tarot/cards/pentacles-04.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-04.webp',
     keywords: ['مالکیت', 'کنترل', 'ثبات', 'احتیاط', 'خودداری'],
     upright: {
       meaning: 'مالکیت و کنترل. چهار سکه نماد ثبات مالی و احتیاط است. زمانه‌ای برای حفظ دارایی‌ها و مدیریت منابع.',
@@ -88,7 +88,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 5,
-    imagePath: '/assets/tarot/cards/pentacles-05.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-05.webp',
     keywords: ['فقر', 'محرومیت', 'تنهایی', 'سختی', 'امید'],
     upright: {
       meaning: 'فقر و سختی. پنج سکه نماد محرومیت و تنهایی است. زمانه‌ای برای پذیرش کمک و یافتن امید در سختی.',
@@ -108,7 +108,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 6,
-    imagePath: '/assets/tarot/cards/pentacles-06.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-06.webp',
     keywords: ['سخاوت', 'بخشش', 'تعادل', 'کمک', 'قدردانی'],
     upright: {
       meaning: 'سخاوت و بخشش. شش سکه نماد تعادل بین دادن و گرفتن است. زمانه‌ای برای بخشش و دریافت کمک.',
@@ -128,7 +128,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 7,
-    imagePath: '/assets/tarot/cards/pentacles-07.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-07.webp',
     keywords: ['صبر', 'ارزیابی', 'سرمایه‌گذاری', 'انتظار', 'رشد'],
     upright: {
       meaning: 'صبر و ارزیابی. هفت سکه نماد انتظار برای نتیجه است. زمانه‌ای برای صبر و ارزیابی پیشرفت.',
@@ -148,7 +148,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 8,
-    imagePath: '/assets/tarot/cards/pentacles-08.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-08.webp',
     keywords: ['مهارت', 'تعهد', 'یادگیری', 'کار سخت', 'پیشرفت'],
     upright: {
       meaning: 'مهارت و تعهد. هشت سکه نماد کار سخت و یادگیری است. زمانه‌ای برای تمرکز بر مهارت و پیشرفت تدریجی.',
@@ -168,7 +168,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 9,
-    imagePath: '/assets/tarot/cards/pentacles-09.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-09.webp',
     keywords: ['استقلال', 'رفاه', 'لذت', 'خودکفایی', 'موفقیت'],
     upright: {
       meaning: 'استقلال و رفاه. نه سکه نماد خودکفایی و لذت از دستاوردهاست. زمانه‌ای برای جشن گرفتن استقلال مالی.',
@@ -188,7 +188,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 10,
-    imagePath: '/assets/tarot/cards/pentacles-10.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-10.webp',
     keywords: ['ثروت', 'خانواده', 'میراث', 'پایداری', 'کمال مادی'],
     upright: {
       meaning: 'ثروت و میراث. ده سکه نماد خانواده و پایداری مالی است. زمانه‌ای برای جشن گرفتن دستاوردهای مادی و خانوادگی.',
@@ -208,7 +208,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 11,
-    imagePath: '/assets/tarot/cards/pentacles-11-page.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-11-page.webp',
     keywords: ['یادگیری', 'فرصت', 'شروع مادی', 'کنجکاوی', 'عملی'],
     upright: {
       meaning: 'یادگیری و فرصت. شاهزاده سکه نماد شروع مادی و یادگیری عملی است. زمانه‌ای برای سرمایه‌گذاری در دانش و مهارت.',
@@ -228,7 +228,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 12,
-    imagePath: '/assets/tarot/cards/pentacles-12-knight.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-12-knight.webp',
     keywords: ['پایداری', 'کار سخت', 'مسئولیت', 'صبر', 'قابلیت اعتماد'],
     upright: {
       meaning: 'پایداری و کار سخت. شوالیه سکه نماد مسئولیت‌پذیری و صبر است. زمانه‌ای برای پیشرفت تدریجی و قابل اعتماد بودن.',
@@ -248,7 +248,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 13,
-    imagePath: '/assets/tarot/cards/pentacles-13-queen.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-13-queen.webp',
     keywords: ['مراقبت', 'ثروت', 'عملی بودن', 'آسایش', 'باروری'],
     upright: {
       meaning: 'مراقبت و ثروت. ملکه سکه نماد عملی بودن و آسایش است. زمانه‌ای برای مراقبت از خود و دیگران و مدیریت منابع.',
@@ -268,7 +268,7 @@ export const PENTACLES_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'pentacles',
     number: 14,
-    imagePath: '/assets/tarot/cards/pentacles-14-king.webp',
+    imagePath: '{BASE_URL}/tarot/cards/pentacles-14-king.webp',
     keywords: ['ثروت', 'اقتدار مادی', 'پایداری', 'کارآفرینی', 'سخاوت'],
     upright: {
       meaning: 'ثروت و اقتدار مادی. شاه سکه نماد کارآفرینی و پایداری است. زمانه‌ای برای رهبری مالی و ساختن پایه‌های محکم.',

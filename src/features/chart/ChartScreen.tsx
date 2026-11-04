@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -8,8 +8,9 @@ import { CityPicker } from '../../components/ui/CityPicker';
 import { ChartWheel } from '../../components/ui/ChartWheel';
 import { ChartInterpretation } from '../../components/ui/ChartInterpretation';
 import { ZodiacScreen } from './ZodiacScreen';
-import { getZodiacFromBirthDate, getBirthstoneFromBirthDate } from '../../engines/zodiac';
-import { MapPin, Clock, Calendar, Sparkles, Loader2, CheckCircle2, Star } from 'lucide-react';
+import { SynastryView } from './SynastryView';
+import { SubscriptionScreen } from '../subscription/SubscriptionScreen';
+import { MapPin, Clock, Calendar, Sparkles, Loader2, CheckCircle2, Star, Heart, Lock } from 'lucide-react';
 import { birthToUtc } from '../../engines/calendar/timezone';
 import { calculateNatalChart } from '../../engines/astronomy/chart';
 import { PLANET_NAMES_FA } from '../../engines/astronomy/constants';
@@ -17,6 +18,7 @@ import type { NatalChart, PlanetName } from '../../engines/astronomy/types';
 import type { CityWithProvince } from '../../engines/location';
 import { saveChart } from './chartService';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useSubscription } from '../../hooks/useSubscription';
 import { formatJalaaliDate } from '../../engines/calendar/format';
 
 const PLANET_ORDER: PlanetName[] = [
@@ -32,7 +34,7 @@ const DEFAULT_CITY: CityWithProvince = {
   lat: 35.6892,
   lon: 51.389,
   province_name: 'تهران',
-  timezone: 'Asia/Tehran'
+  timezone: 'Asia/Tehran',
 };
 
 const STORAGE_KEY = 'luma_chart_state';
@@ -57,11 +59,12 @@ function loadState(): ChartState | null {
 function saveState(state: ChartState) {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch { /* ignore */ }
+  } catch {}
 }
 
 export function ChartScreen() {
   const user = useAuthStore((s) => s.user);
+  const subscription = useSubscription();
   const savedState = loadState();
 
   const [birthDate, setBirthDate] = useState<JalaaliDateValue>(
@@ -78,8 +81,8 @@ export function ChartScreen() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [showZodiac, setShowZodiac] = useState(false);
-  const [zodiacInfo, setZodiacInfo] = useState<any>(null);
-  const [birthstoneInfo, setBirthstoneInfo] = useState<any>(null);
+  const [showSynastry, setShowSynastry] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
 
   useEffect(() => {
     saveState({ birthDate, birthTime, city, chart });
@@ -101,15 +104,6 @@ export function ChartScreen() {
         city.timezone || 'Asia/Tehran'
       );
       const result = calculateNatalChart(utcDate, city.lat, city.lon);
-      // محاسبه برج و سنگ از تاریخ تولد
-      const zodiacInfo = getZodiacFromBirthDate({
-        year: birthDate.year, month: birthDate.month, day: birthDate.day
-      });
-      const birthstoneInfo = getBirthstoneFromBirthDate({
-        year: birthDate.year, month: birthDate.month, day: birthDate.day
-      });
-      setZodiacInfo(zodiacInfo);
-      setBirthstoneInfo(birthstoneInfo);
       setChart(result);
 
       if (user) {
@@ -134,18 +128,33 @@ export function ChartScreen() {
     sessionStorage.removeItem(STORAGE_KEY);
   };
 
-  // صفحه زودیاک
+  if (showSubscription) {
+    return <SubscriptionScreen onBack={() => setShowSubscription(false)} />;
+  }
+
   if (showZodiac) {
     return <ZodiacScreen onBack={() => setShowZodiac(false)} />;
   }
 
+  if (showSynastry && chart) {
+    return (
+      <SynastryView
+        person1Chart={chart}
+        person1Name={user?.displayName || 'شما'}
+        onBack={() => setShowSynastry(false)}
+      />
+    );
+  }
+
   if (chart && city) {
     const sortedPlanets = PLANET_ORDER
-      .map(name => chart.planets.find(p => p.planet === name))
+      .map((name) => chart.planets.find((p) => p.planet === name))
       .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
+    const canAccessSynastry = subscription.canUseSynastry();
+
     return (
-      <div className="space-y-5">
+      <div className="space-y-5 pb-24">
         <PageHeader
           title="چارت تولد شما"
           subtitle={`${formatJalaaliDate({ year: birthDate.year, month: birthDate.month, day: birthDate.day })} — ${birthTime.hour}:${String(birthTime.minute).padStart(2, '0')} — ${city.name}`}
@@ -162,6 +171,37 @@ export function ChartScreen() {
           }
         />
 
+        {/* دکمه سیناستری (مقایسه دو چارت) */}
+        <Card variant="gold-border" padding="sm">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-rose-400 flex-shrink-0" />
+              <div>
+                <h4 className="font-heading text-xs text-[var(--luma-text)] font-bold">
+                  سیناستری و تطابق عاطفی دو چارت
+                </h4>
+                <p className="text-[10px] text-[var(--luma-text-muted)]">
+                  مقایسه چارت تولد شما با شریک عاطفی
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="gold"
+              size="sm"
+              onClick={() => {
+                if (canAccessSynastry) {
+                  setShowSynastry(true);
+                } else {
+                  setShowSubscription(true);
+                }
+              }}
+            >
+              {!canAccessSynastry && <Lock className="w-3 h-3" />}
+              {canAccessSynastry ? 'شروع مقایسه' : 'ویژه پریمیوم'}
+            </Button>
+          </div>
+        </Card>
+
         <Card variant="glass" padding="md">
           {saved && (
             <div className="mb-3 flex items-center justify-center gap-1.5 text-xs text-green-400">
@@ -177,11 +217,17 @@ export function ChartScreen() {
         <Card variant="elevated" padding="md">
           <h3 className="font-heading text-lg text-[var(--luma-text)] mb-3">موقعیت سیارات</h3>
           <div className="space-y-2 text-sm">
-            {sortedPlanets.map(p => (
-              <div key={p.planet} className="flex items-center justify-between py-1.5 border-b border-[var(--luma-border)] last:border-0">
-                <span className="text-[var(--luma-text)] font-medium">{PLANET_NAMES_FA[p.planet]}</span>
+            {sortedPlanets.map((p) => (
+              <div
+                key={p.planet}
+                className="flex items-center justify-between py-1.5 border-b border-[var(--luma-border)] last:border-0"
+              >
+                <span className="text-[var(--luma-text)] font-medium">
+                  {PLANET_NAMES_FA[p.planet]}
+                </span>
                 <span className="text-[var(--luma-text-muted)] text-xs">
-                  {p.signDegree.toFixed(1)}° {p.retrograde && <span className="text-amber-500">℞</span>}
+                  {p.signDegree.toFixed(1)}°{' '}
+                  {p.retrograde && <span className="text-amber-500">℞</span>}
                 </span>
               </div>
             ))}
@@ -192,7 +238,7 @@ export function ChartScreen() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-24">
       <PageHeader
         title="چارت تولد"
         subtitle="اطلاعات تولد خود را وارد کنید"

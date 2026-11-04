@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { AppLayout } from './components/layout/AppLayout';
 import { type TabId } from './components/layout/BottomNav';
 import { AuthScreen } from './features/auth/AuthScreen';
 import { HomeScreen } from './features/home/HomeScreen';
+import { MyCosmicProfileScreen } from './features/cosmic-profile/MyCosmicProfileScreen';
 import { ChartScreen } from './features/chart/ChartScreen';
 import { TarotScreen } from './features/tarot/TarotScreen';
 import { NumerologyScreen } from './features/numerology/NumerologyScreen';
@@ -28,7 +29,9 @@ function App() {
       })
       .finally(() => setLoading(false));
 
-    const { data: { subscription } } = onAuthStateChange((u) => {
+    const {
+      data: { subscription },
+    } = onAuthStateChange((u) => {
       setUser(u);
     });
 
@@ -50,12 +53,20 @@ function App() {
 
   const renderScreen = () => {
     switch (activeTab) {
-      case 'home': return <HomeScreen onNavigate={setActiveTab} />;
-      case 'chart': return <ChartScreen />;
-      case 'tarot': return <TarotScreen />;
-      case 'numerology': return <NumerologyScreen />;
-      case 'chinese': return <ChineseScreen />;
-      case 'profile': return <ProfileScreen />;
+      case 'home':
+        return <HomeScreen onNavigate={setActiveTab} />;
+      case 'cosmic':
+        return <MyCosmicProfileScreen onNavigate={setActiveTab} />;
+      case 'chart':
+        return <ChartScreen />;
+      case 'tarot':
+        return <TarotScreen />;
+      case 'numerology':
+        return <NumerologyScreen />;
+      case 'chinese':
+        return <ChineseScreen />;
+      case 'profile':
+        return <ProfileScreen />;
     }
   };
 

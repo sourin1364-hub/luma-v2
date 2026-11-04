@@ -1,4 +1,4 @@
-import type { TarotCard } from './types';
+﻿import type { TarotCard } from './types';
 
 export const MAJOR_ARCANA_PART_2: TarotCard[] = [
   {
@@ -8,7 +8,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 12,
-    imagePath: '/assets/tarot/cards/major-12-hanged-man.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-12-hanged-man.webp',
     keywords: ['تسلیم', 'تعلیق', 'دیدگاه جدید', 'فداکاری', 'صبر'],
     upright: {
       meaning: 'تسلیم، تعلیق و دیدگاه جدید. معلق نماد رها کردن کنترل و دیدن از زاویه‌ای متفاوت است. زمانه‌ای برای صبر، تأمل و پذیرش.',
@@ -29,7 +29,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 13,
-    imagePath: '/assets/tarot/cards/major-13-death.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-13-death.webp',
     keywords: ['پایان', 'دگردیسی', 'تحول', 'رهایی', 'آغاز نو'],
     upright: {
       meaning: 'پایان یک چرخه و آغاز چرخه‌ای نو. مرگ نماد دگردیسی و تحول عمیق است. زمانه‌ای برای رها کردن گذشته و پذیرش تغییر.',
@@ -50,7 +50,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 14,
-    imagePath: '/assets/tarot/cards/major-14-temperance.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-14-temperance.webp',
     keywords: ['تعادل', 'هماهنگی', 'صبر', 'ترکیب', 'شفا'],
     upright: {
       meaning: 'تعادل، هماهنگی و شفا. میانه‌روی نماد ترکیب متضادها و یافتن راه میانه است. زمانه‌ای برای صبر، تعادل و بهبود.',
@@ -71,7 +71,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 15,
-    imagePath: '/assets/tarot/cards/major-15-devil.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-15-devil.webp',
     keywords: ['وابستگی', 'وسوسه', 'قید', 'سایه', 'مادی‌گرایی'],
     upright: {
       meaning: 'وابستگی، وسوسه و قید. شیطان نماد سایه و مادی‌گرایی است. زمانه‌ای برای شناخت محدودیت‌های خودساخته و رهایی از آن‌ها.',
@@ -92,7 +92,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 16,
-    imagePath: '/assets/tarot/cards/major-16-tower.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-16-tower.webp',
     keywords: ['فروپاشی', 'آشوب', 'آزادسازی', 'فاش شدن', 'تغییر ناگهانی'],
     upright: {
       meaning: 'فروپاشی ناگهانی و آشوب. برج نماد فروریختن ساختارهای قدیمی و آزادسازی است. زمانه‌ای برای پذیرش تغییرات ناگهانی و بازسازی.',
@@ -113,7 +113,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 17,
-    imagePath: '/assets/tarot/cards/major-17-star.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-17-star.webp',
     keywords: ['امید', 'الهام', 'شفا', 'ایمان', 'آرامش'],
     upright: {
       meaning: 'امید، الهام و شفا. ستاره نماد ایمان و آرامش پس از طوفان است. زمانه‌ای برای امیدواری، الهام گرفتن و اعتماد به آینده.',
@@ -134,7 +134,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 18,
-    imagePath: '/assets/tarot/cards/major-18-moon.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-18-moon.webp',
     keywords: ['توهم', 'ترس', 'ناخودآگاه', 'شهود', 'ابهام'],
     upright: {
       meaning: 'توهم، ترس و ناخودآگاه. ماه نماد ابهام و شهود است. زمانه‌ای برای مواجهه با ترس‌ها و گوش دادن به ناخودآگاه.',
@@ -155,7 +155,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 19,
-    imagePath: '/assets/tarot/cards/major-19-sun.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-19-sun.webp',
     keywords: ['شادی', 'موفقیت', 'وضوح', 'انرژی', 'آگاهی'],
     upright: {
       meaning: 'شادی، موفقیت و وضوح. خورشید نماد آگاهی و انرژی مثبت است. زمانه‌ای برای خوش‌بینی، موفقیت و روشنایی.',
@@ -176,7 +176,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 20,
-    imagePath: '/assets/tarot/cards/major-20-judgement.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-20-judgement.webp',
     keywords: ['بیداری', 'داوری', 'رستاخیز', 'بازنگری', 'فراخوانی'],
     upright: {
       meaning: 'بیداری، داوری و رستاخیز. داوری نماد بازنگری و فراخوانی به سوی هدفی بالاتر است. زمانه‌ای برای پذیرش گذشته و حرکت به جلو.',
@@ -197,7 +197,7 @@ export const MAJOR_ARCANA_PART_2: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 21,
-    imagePath: '/assets/tarot/cards/major-21-world.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-21-world.webp',
     keywords: ['تکمیل', 'کمال', 'یکپارچگی', 'موفقیت', 'سفر'],
     upright: {
       meaning: 'تکمیل، کمال و یکپارچگی. جهان نماد پایان یک چرخه و موفقیت است. زمانه‌ای برای جشن گرفتن دستاوردها و آماده شدن برای سفر جدید.',

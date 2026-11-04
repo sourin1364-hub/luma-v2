@@ -1,4 +1,4 @@
-import type { TarotCard } from './types';
+﻿import type { TarotCard } from './types';
 
 export const WANDS_CARDS: TarotCard[] = [
   {
@@ -8,7 +8,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 1,
-    imagePath: '/assets/tarot/cards/wands-01-ace.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-01-ace.webp',
     keywords: ['جرقه خلاقیت', 'الهام', 'شروع', 'انرژی', 'اشتیاق'],
     upright: {
       meaning: 'جرقه‌ای از الهام و خلاقیت. آس چوبدست نماد شروع پرانرژی و اشتیاق است. زمانه‌ای برای آغاز پروژه‌ای جدید با اعتماد به نفس.',
@@ -28,7 +28,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 2,
-    imagePath: '/assets/tarot/cards/wands-02.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-02.webp',
     keywords: ['برنامه‌ریزی', 'تصمیم', 'آینده‌نگری', 'انتخاب', 'جاه‌طلبی'],
     upright: {
       meaning: 'برنامه‌ریزی و آینده‌نگری. دو چوبدست نماد تصمیم برای حرکت به جلو و گسترش افق‌هاست. زمانه‌ای برای انتخاب مسیر و برنامه‌ریزی.',
@@ -48,7 +48,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 3,
-    imagePath: '/assets/tarot/cards/wands-03.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-03.webp',
     keywords: ['گسترش', 'چشم‌انداز', 'پیشرفت', 'همکاری', 'آینده'],
     upright: {
       meaning: 'گسترش و پیشرفت. سه چوبدست نماد همکاری و دیدن نتایج تلاش‌هاست. زمانه‌ای برای گسترش افق‌ها و همکاری با دیگران.',
@@ -68,7 +68,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 4,
-    imagePath: '/assets/tarot/cards/wands-04.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-04.webp',
     keywords: ['جشن', 'خانه', 'هماهنگی', 'پایداری', 'خانواده'],
     upright: {
       meaning: 'جشن و هماهنگی. چهار چوبدست نماد خانه و پایداری است. زمانه‌ای برای جشن گرفتن دستاوردها و کنار خانواده بودن.',
@@ -88,7 +88,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 5,
-    imagePath: '/assets/tarot/cards/wands-05.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-05.webp',
     keywords: ['رقابت', 'تعارض', 'چالش', 'تنوع', 'مبارزه'],
     upright: {
       meaning: 'رقابت و چالش. پنج چوبدست نماد تعارض و تنوع است. زمانه‌ای برای مواجهه با رقابت و یافتن راهی برای همکاری.',
@@ -108,7 +108,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 6,
-    imagePath: '/assets/tarot/cards/wands-06.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-06.webp',
     keywords: ['پیروزی', 'افتخار', 'شناخت', 'موفقیت', 'رهبری'],
     upright: {
       meaning: 'پیروزی و شناخت. شش چوبدست نماد موفقیت و افتخار است. زمانه‌ای برای جشن گرفتن پیروزی و دریافت شناخت.',
@@ -128,7 +128,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 7,
-    imagePath: '/assets/tarot/cards/wands-07.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-07.webp',
     keywords: ['دفاع', 'ایستادگی', 'چالش', 'اعتماد', 'مقاومت'],
     upright: {
       meaning: 'دفاع و ایستادگی. هفت چوبدست نماد مقاومت در برابر چالش‌هاست. زمانه‌ای برای دفاع از باورها و ایستادگی.',
@@ -148,7 +148,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 8,
-    imagePath: '/assets/tarot/cards/wands-08.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-08.webp',
     keywords: ['سرعت', 'حرکت', 'پیشرفت', 'ارتباط', 'خبر'],
     upright: {
       meaning: 'سرعت و حرکت. هشت چوبدست نماد پیشرفت سریع و ارتباطات است. زمانه‌ای برای اقدام سریع و دریافت خبرهای خوب.',
@@ -168,7 +168,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 9,
-    imagePath: '/assets/tarot/cards/wands-09.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-09.webp',
     keywords: ['استقامت', 'آمادگی', 'خستگی', 'دفاع', 'امید'],
     upright: {
       meaning: 'استقامت و آمادگی. نه چوبدست نماد مقاومت پس از چالش‌هاست. زمانه‌ای برای ادامه دادن با وجود خستگی.',
@@ -188,7 +188,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 10,
-    imagePath: '/assets/tarot/cards/wands-10.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-10.webp',
     keywords: ['بار سنگین', 'مسئولیت', 'فشار', 'تعهد', 'پایان'],
     upright: {
       meaning: 'بار سنگین و مسئولیت. ده چوبدست نماد فشار و تعهد است. زمانه‌ای برای تحمل بار مسئولیت و نزدیک شدن به پایان.',
@@ -208,7 +208,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 11,
-    imagePath: '/assets/tarot/cards/wands-11-page.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-11-page.webp',
     keywords: ['کاوش', 'اشتیاق', 'کشف', 'پیام', 'آغاز'],
     upright: {
       meaning: 'کاوش و اشتیاق. شاهزاده چوبدست نماد کشف و پیام است. زمانه‌ای برای شروع ماجراجویی و دنبال کردن اشتیاق.',
@@ -228,7 +228,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 12,
-    imagePath: '/assets/tarot/cards/wands-12-knight.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-12-knight.webp',
     keywords: ['اقدام', 'ماجراجویی', 'اشتیاق', 'جسارت', 'حرکت'],
     upright: {
       meaning: 'اقدام و ماجراجویی. شوالیه چوبدست نماد جسارت و حرکت است. زمانه‌ای برای اقدام سریع و دنبال کردن اشتیاق.',
@@ -248,7 +248,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 13,
-    imagePath: '/assets/tarot/cards/wands-13-queen.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-13-queen.webp',
     keywords: ['جذابیت', 'اعتماد', 'خلق', 'استقلال', 'گرما'],
     upright: {
       meaning: 'جذابیت و اعتماد. ملکه چوبدست نماد خلاقیت و استقلال است. زمانه‌ای برای اعتماد به خود و ابراز وجود.',
@@ -268,7 +268,7 @@ export const WANDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'wands',
     number: 14,
-    imagePath: '/assets/tarot/cards/wands-14-king.webp',
+    imagePath: '{BASE_URL}/tarot/cards/wands-14-king.webp',
     keywords: ['رهبری', 'چشم‌انداز', 'اقتدار', 'خلاقیت', 'کارآفرینی'],
     upright: {
       meaning: 'رهبری و چشم‌انداز. شاه چوبدست نماد اقتدار و کارآفرینی است. زمانه‌ای برای رهبری و تبدیل ایده به واقعیت.',

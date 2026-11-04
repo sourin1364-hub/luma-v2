@@ -1,6 +1,4 @@
-import type { PlanetName } from '../../astronomy/types';
-
-export type SpreadId =
+﻿export type SpreadId =
   | 'daily-card'
   | 'single-card'
   | 'past-present-future'

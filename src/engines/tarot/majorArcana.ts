@@ -1,4 +1,4 @@
-import type { TarotCard } from './types';
+﻿import type { TarotCard } from './types';
 
 export const MAJOR_ARCANA_PART_1: TarotCard[] = [
   {
@@ -8,7 +8,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 0,
-    imagePath: '/assets/tarot/cards/major-00-fool.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-00-fool.webp',
     keywords: ['آغاز', 'بی‌پروایی', 'ماجراجویی', 'ایمان', 'آزادی'],
     upright: {
       meaning: 'آغازی تازه، سفری به ناشناخته‌ها، ایمان به آینده و رهایی از قید و بند. احمق نماد innocence و اعتماد به کائنات است. زمانه‌ای برای شروع دوباره و پذیرش ریسک.',
@@ -29,7 +29,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 1,
-    imagePath: '/assets/tarot/cards/major-01-magician.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-01-magician.webp',
     keywords: ['اراده', 'قدرت', 'مهارت', 'عمل', 'خلاقیت'],
     upright: {
       meaning: 'توانایی، مهارت و اراده برای خلق واقعیت. جادوگر نماد قدرت تمرکز و استفاده از همه ابزارهای موجود است. زمانه‌ای برای اقدام و تبدیل ایده به واقعیت.',
@@ -50,7 +50,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 2,
-    imagePath: '/assets/tarot/cards/major-02-high-priestess.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-02-high-priestess.webp',
     keywords: ['شهود', 'راز', 'ناخودآگاه', 'دانش درونی', 'صبر'],
     upright: {
       meaning: 'شهود، خرد درونی و دانش پنهان. کاهن اعظم نماد راز و ناخودآگاه است. زمانه‌ای برای گوش دادن به صدای درون و اعتماد به شهود.',
@@ -71,7 +71,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 3,
-    imagePath: '/assets/tarot/cards/major-03-empress.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-03-empress.webp',
     keywords: ['باروری', 'فراوانی', 'طبیعت', 'خلاقیت', 'مادری'],
     upright: {
       meaning: 'باروری، فراوانی و خلاقیت. ملکه نماد طبیعت، زیبایی و رشد است. زمانه‌ای برای شکوفایی، مراقبت و لذت از زندگی.',
@@ -92,7 +92,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 4,
-    imagePath: '/assets/tarot/cards/major-04-emperor.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-04-emperor.webp',
     keywords: ['اقتدار', 'ساختار', 'پدر', 'ثبات', 'رهبری'],
     upright: {
       meaning: 'اقتدار، ساختار و نظم. امپراتور نماد پدر، رهبری و ثبات است. زمانه‌ای برای ایجاد نظم، مسئولیت‌پذیری و کنترل.',
@@ -113,7 +113,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 5,
-    imagePath: '/assets/tarot/cards/major-05-hierophant.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-05-hierophant.webp',
     keywords: ['سنت', 'آموزش', 'معنویت', 'راهنمایی', 'اعتقاد'],
     upright: {
       meaning: 'سنت، آموزش و معنویت. کاهن نماد راهنمایی معنوی و باورهای جمعی است. زمانه‌ای برای یادگیری، پیروی از سنت و جستجوی معنا.',
@@ -134,7 +134,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 6,
-    imagePath: '/assets/tarot/cards/major-06-lovers.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-06-lovers.webp',
     keywords: ['عشق', 'انتخاب', 'اتحاد', 'هماهنگی', 'ارزش‌ها'],
     upright: {
       meaning: 'عشق، انتخاب و اتحاد. عاشقان نماد هماهنگی و تصمیم‌گیری بر اساس ارزش‌ها هستند. زمانه‌ای برای عشق، همکاری و انتخاب آگاهانه.',
@@ -155,7 +155,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 7,
-    imagePath: '/assets/tarot/cards/major-07-chariot.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-07-chariot.webp',
     keywords: ['پیروزی', 'اراده', 'کنترل', 'حرکت', 'عزم'],
     upright: {
       meaning: 'پیروزی، اراده و کنترل. ارابه نماد عزم و حرکت به سمت هدف است. زمانه‌ای برای غلبه بر موانع و پیشرفت قاطع.',
@@ -176,7 +176,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 8,
-    imagePath: '/assets/tarot/cards/major-08-strength.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-08-strength.webp',
     keywords: ['شجاعت', 'قدرت درونی', 'صبر', 'مهربانی', 'غلبه بر ترس'],
     upright: {
       meaning: 'شجاعت، قدرت درونی و صبر. قدرت نماد غلبه بر ترس با مهربانی است. زمانه‌ای برای اعتماد به خود و کنترل نفس.',
@@ -197,7 +197,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 9,
-    imagePath: '/assets/tarot/cards/major-09-hermit.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-09-hermit.webp',
     keywords: ['تنهایی', 'درون‌نگری', 'خرد', 'راهنمایی', 'جستجو'],
     upright: {
       meaning: 'تنهایی، درون‌نگری و خرد. راهب نماد جستجوی معنا در solitude است. زمانه‌ای برای تأمل، کشف خود و راهنمایی دیگران.',
@@ -218,7 +218,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 10,
-    imagePath: '/assets/tarot/cards/major-10-wheel.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-10-wheel.webp',
     keywords: ['سرنوشت', 'چرخه', 'تحول', 'شانس', 'حرکت'],
     upright: {
       meaning: 'سرنوشت، چرخه و تحول. چرخ بخت نماد تغییرات ناگهانی و شانس است. زمانه‌ای برای پذیرش چرخه‌های زندگی و حرکت به جلو.',
@@ -239,7 +239,7 @@ export const MAJOR_ARCANA_PART_1: TarotCard[] = [
     arcana: 'major',
     suit: 'major',
     number: 11,
-    imagePath: '/assets/tarot/cards/major-11-justice.webp',
+    imagePath: '{BASE_URL}/tarot/cards/major-11-justice.webp',
     keywords: ['عدالت', 'تعادل', 'حقیقت', 'مسئولیت', 'انصاف'],
     upright: {
       meaning: 'عدالت، تعادل و حقیقت. عدالت نماد انصاف و مسئولیت‌پذیری است. زمانه‌ای برای تصمیم‌گیری عادلانه و پذیرش پیامدها.',

@@ -1,265 +1,255 @@
-import { useState } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { TarotSpreadSelector } from '../../components/tarot/TarotSpreadSelector';
 import { TarotCardDeck } from '../../components/tarot/TarotCardDeck';
-import { TarotRevealCard } from '../../components/tarot/TarotRevealCard';
+import { TarotResultScreen } from './TarotResultScreen';
 import { TarotHistoryScreen } from './TarotHistoryScreen';
-import { Sparkles, ArrowRight, History, Lock, Crown } from 'lucide-react';
-import { performReading, interpretReading } from '../../engines/tarot';
-import type { Spread, ReadingResult, ReadingInterpretation } from '../../engines/tarot';
-import { synthesizeReading } from '../../engines/tarot/interpretation/index';
-import type { ReadingSynthesis } from '../../engines/tarot/interpretation/index';
+import { TarotLibraryModal } from './TarotLibraryModal';
+import { SubscriptionScreen } from '../subscription/SubscriptionScreen';
 import { saveReading } from './tarotHistoryService';
+import { ALL_TAROT_CARDS, getSpreadById, TAROT_ENGINE_VERSION } from '../../engines/tarot';
+import { synthesizeReading } from '../../engines/tarot/interpretation/engine';
+import type { Spread, ReadingResult, DrawnCard, TarotCard } from '../../engines/tarot/types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useSubscription } from '../../hooks/useSubscription';
+import { playCardSelectSound, playCardFlipSound, playDeckShuffleSound } from '../../utils/audio';
+import { History, Sparkles, RotateCcw, Settings2, BookOpen } from 'lucide-react';
 
-type Step = 'select-spread' | 'ask-question' | 'select-cards' | 'result' | 'history';
+type TarotStep = 'select-spread' | 'draw-cards' | 'result' | 'history' | 'library' | 'subscription';
+
+function shuffleDeck(cards: TarotCard[]): TarotCard[] {
+  const copy = [...cards];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 export function TarotScreen() {
   const user = useAuthStore((s) => s.user);
   const subscription = useSubscription();
-  const [step, setStep] = useState<Step>('select-spread');
+
+  const [step, setStep] = useState<TarotStep>('select-spread');
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
   const [question, setQuestion] = useState('');
-  const [reading, setReading] = useState<ReadingResult | null>(null);
-  const [interpretation, setInterpretation] = useState<ReadingInterpretation | null>(null);
-  const [synthesis, setSynthesis] = useState<ReadingSynthesis | null>(null);
+  const [allowReversed, setAllowReversed] = useState(true);
+  const [shuffledCards, setShuffledCards] = useState<TarotCard[]>(() => shuffleDeck(ALL_TAROT_CARDS));
+  const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+  const [shuffleKey, setShuffleKey] = useState<number>(0);
+  const [readingResult, setReadingResult] = useState<ReadingResult | null>(null);
 
   const handleSelectSpread = (spread: Spread) => {
     if (!subscription.canUseSpread(spread.id)) {
+      setStep('subscription');
       return;
     }
     setSelectedSpread(spread);
-    setStep('ask-question');
+    setSelectedCardIds([]);
+    setShuffledCards(shuffleDeck(ALL_TAROT_CARDS));
+    setShuffleKey((prev) => prev + 1);
+    playDeckShuffleSound();
+    setStep('draw-cards');
   };
 
-  const handleGoToSelectCards = () => {
-    if (!selectedSpread) return;
-    setStep('select-cards');
+  const handleReshuffle = () => {
+    setSelectedCardIds([]);
+    setShuffledCards(shuffleDeck(ALL_TAROT_CARDS));
+    setShuffleKey((prev) => prev + 1);
+    playDeckShuffleSound();
   };
 
-  const handleCardsSelected = async (_indices: number[]) => {
+  const handleCardSelect = async (cardId: string) => {
     if (!selectedSpread) return;
-    const result = performReading(selectedSpread, question);
-    const interp = interpretReading(result);
-    setReading(result);
-    setInterpretation(interp);
+    if (selectedCardIds.includes(cardId)) return;
+    if (selectedCardIds.length >= selectedSpread.cardCount) return;
 
-    if (subscription.canUseSynthesis()) {
-      const synth = synthesizeReading(result);
-      setSynthesis(synth);
-    } else {
-      setSynthesis(null);
-    }
+    playCardSelectSound();
+    const updatedIds = [...selectedCardIds, cardId];
+    setSelectedCardIds(updatedIds);
 
-    setStep('result');
+    if (updatedIds.length === selectedSpread.cardCount) {
+      playCardFlipSound();
 
-    if (user) {
-      try {
-        await saveReading(user.id, result, interp);
-      } catch (saveErr) {
-        console.error('Save reading error:', saveErr);
+      const drawnCards: DrawnCard[] = updatedIds.map((id, index) => ({
+        cardId: id,
+        isReversed: allowReversed ? Math.random() < 0.3 : false,
+        positionIndex: index,
+      }));
+
+      const result: ReadingResult = {
+        spreadId: selectedSpread.id,
+        question: question.trim() || selectedSpread.nameFa,
+        drawnCards,
+        createdAt: new Date().toISOString(),
+        version: TAROT_ENGINE_VERSION || '1.0.0',
+      };
+
+      setReadingResult(result);
+
+      if (user) {
+        try {
+          const synthesis = synthesizeReading(result);
+          await saveReading(user.id, result, {
+            summary: synthesis.narrative,
+            advice: synthesis.advice,
+            cards: [],
+          } as any);
+        } catch (err) {
+          console.error('Error auto-saving tarot reading:', err);
+        }
       }
+
+      setTimeout(() => {
+        setStep('result');
+      }, 1500);
     }
   };
 
-  const handleReset = () => {
-    setStep('select-spread');
-    setSelectedSpread(null);
-    setQuestion('');
-    setReading(null);
-    setInterpretation(null);
-    setSynthesis(null);
-  };
+  const currentPosition = useMemo(() => {
+    if (!selectedSpread) return null;
+    const nextIdx = selectedCardIds.length;
+    if (nextIdx < selectedSpread.positions.length) {
+      return selectedSpread.positions[nextIdx];
+    }
+    return null;
+  }, [selectedSpread, selectedCardIds]);
 
-  if (step === 'history') {
-    return <TarotHistoryScreen onBack={() => setStep('select-spread')} />;
+  if (step === 'subscription') {
+    return <SubscriptionScreen onBack={() => setStep('select-spread')} />;
   }
 
-  if (step === 'select-spread') {
+  if (step === 'library') {
+    return <TarotLibraryModal onBack={() => setStep('select-spread')} />;
+  }
+
+  if (step === 'history') {
     return (
-      <div className="space-y-5">
-        <PageHeader
-          title="تاروت"
-          subtitle="چیدمان مورد نظر خود را انتخاب کنید"
-          action={
-            <Button variant="ghost" size="sm" onClick={() => setStep('history')}>
-              <History className="w-4 h-4" />
-              تاریخچه
-            </Button>
-          }
-        />
-        {!subscription.isPremium && !subscription.isLoading && (
-          <Card variant="elevated" padding="sm" className="border-amber-500/30 bg-amber-500/5">
-            <div className="flex items-center gap-2">
-              <Crown className="w-3.5 h-3.5 text-amber-400" />
-              <p className="text-[10px] text-amber-400">
-                چیدمان‌های پیشرفته و تفسیر جامع LUMA مخصوص اشتراک پریمیوم است.
-              </p>
-            </div>
-          </Card>
-        )}
-        <TarotSpreadSelector
-          onSelect={handleSelectSpread}
-          canUseSpread={subscription.canUseSpread}
-        />
-      </div>
+      <TarotHistoryScreen
+        onBack={() => setStep('select-spread')}
+        onSelectReading={(savedResult) => {
+          const sp = getSpreadById(savedResult.spreadId);
+          if (sp) setSelectedSpread(sp);
+          setReadingResult(savedResult);
+          setStep('result');
+        }}
+      />
     );
   }
 
-  if (step === 'ask-question' && selectedSpread) {
+  if (step === 'result' && readingResult) {
     return (
-      <div className="space-y-5">
+      <TarotResultScreen
+        readingResult={readingResult}
+        onBack={() => {
+          setReadingResult(null);
+          setSelectedCardIds([]);
+          setStep('select-spread');
+        }}
+      />
+    );
+  }
+
+  if (step === 'draw-cards' && selectedSpread) {
+    return (
+      <div className="space-y-4 pb-24">
         <PageHeader
           title={selectedSpread.nameFa}
           subtitle={selectedSpread.description}
-          onBack={handleReset}
-        />
-        <Card variant="elevated" padding="md">
-          <label className="block text-sm text-[var(--luma-text)] mb-2 font-medium">
-            پرسش شما (اختیاری)
-          </label>
-          <textarea
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="اگر پرسشی دارید بنویسید..."
-            rows={3}
-            className="w-full px-4 py-3 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] transition-colors resize-none"
-          />
-        </Card>
-
-        <Card variant="glass" padding="md" className="text-center">
-          <p className="text-sm text-[var(--luma-text-muted)]">
-            {selectedSpread.cardCount} کارت برای این چیدمان انتخاب می‌شود
-          </p>
-        </Card>
-
-        <Button variant="gold" fullWidth size="lg" onClick={handleGoToSelectCards}>
-          <Sparkles className="w-4 h-4" />
-          شافل و انتخاب کارت‌ها
-        </Button>
-      </div>
-    );
-  }
-
-  if (step === 'select-cards' && selectedSpread) {
-    return (
-      <div className="space-y-5">
-        <PageHeader
-          title="انتخاب کارت‌ها"
-          subtitle={`${selectedSpread.nameFa} — ${selectedSpread.cardCount} کارت`}
-          onBack={() => setStep('ask-question')}
-        />
-        <TarotCardDeck
-          cardCount={selectedSpread.cardCount}
-          onComplete={handleCardsSelected}
-        />
-      </div>
-    );
-  }
-
-  if (step === 'result' && reading && interpretation && selectedSpread) {
-    return (
-      <div className="space-y-5">
-        <PageHeader
-          title={selectedSpread.nameFa}
-          subtitle={question || 'فال شما'}
-          onBack={handleReset}
+          onBack={() => setStep('select-spread')}
         />
 
-        <div className="space-y-6">
-          {interpretation.cards.map((cardInterp, idx) => (
-            <TarotRevealCard
-              key={cardInterp.positionIndex}
-              card={cardInterp.card}
-              isReversed={cardInterp.isReversed}
-              positionName={cardInterp.positionName}
-              meaning={cardInterp.meaning}
-              keywords={cardInterp.keywords}
-              delay={idx * 0.3}
+        <Card variant="elevated" padding="md" className="space-y-3">
+          <div>
+            <label className="block text-xs text-[var(--luma-text-muted)] mb-1.5">
+              نیت یا پرسش شما (اختیاری):
+            </label>
+            <input
+              type="text"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="نیت کنید یا سوال خود را بنویسید..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] text-xs"
             />
-          ))}
-        </div>
+          </div>
 
-        {/* تحلیل جامع LUMA — فقط برای پریمیوم */}
-        {synthesis ? (
-          <Card variant="gold-border" padding="md">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-heading text-base text-[var(--luma-text)]">تحلیل جامع LUMA</h3>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]">
-                {synthesis.energyScore}/100
+          <div className="flex items-center justify-between pt-2 border-t border-[var(--luma-border)]">
+            <div className="flex items-center gap-1.5 text-xs text-[var(--luma-text-muted)]">
+              <Settings2 className="w-3.5 h-3.5 text-[var(--luma-gold)]" />
+              <span>احتمال کارت معکوس (۳۰٪)</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAllowReversed((prev) => !prev)}
+              className={
+                'px-3 py-1 rounded-full text-[11px] font-medium transition-colors ' +
+                (allowReversed
+                  ? 'bg-[var(--luma-gold)]/20 text-[var(--luma-gold)] border border-[var(--luma-gold)]/40'
+                  : 'bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)] border border-[var(--luma-border)]')
+              }
+            >
+              {allowReversed ? 'فعال' : 'غیرفعال'}
+            </button>
+          </div>
+        </Card>
+
+        {currentPosition && (
+          <Card variant="gold-border" padding="sm" className="text-center">
+            <p className="text-xs font-bold text-[var(--luma-gold)] flex items-center justify-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              <span>
+                کارت {selectedCardIds.length + 1}: {currentPosition.nameFa}
               </span>
-            </div>
-
-            <div className="flex flex-wrap gap-1 mb-3">
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)]">
-                تم: {synthesis.overallTheme}
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)]">
-                عنصر: {synthesis.dominantElement}
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)]">
-                خال: {synthesis.dominantSuit}
-              </span>
-            </div>
-
-            <div className="mb-3">
-              <p className="text-xs text-[var(--luma-text-muted)] mb-1 font-medium">روایت فال:</p>
-              <p className="text-sm text-[var(--luma-text)] leading-relaxed text-justify" dir="rtl">{synthesis.narrative}</p>
-            </div>
-
-            <div className="pt-3 border-t border-[var(--luma-border)] mb-3">
-              <p className="text-xs text-[var(--luma-gold)] mb-1 font-medium">💡 توصیه اصلی LUMA:</p>
-              <p className="text-sm text-[var(--luma-text)] leading-relaxed text-justify" dir="rtl">{synthesis.advice}</p>
-            </div>
-
-            {synthesis.warnings.length > 0 && (
-              <div className="pt-3 border-t border-[var(--luma-border)] mb-3">
-                <p className="text-xs text-amber-400 mb-1 font-medium">⚠️ هشدارها:</p>
-                <ul className="space-y-1">
-                  {synthesis.warnings.map((w, i) => (
-                    <li key={i} className="text-xs text-amber-400/80 leading-relaxed text-justify" dir="rtl">• {w}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {synthesis.affirmations.length > 0 && (
-              <div className="pt-3 border-t border-[var(--luma-border)]">
-                <p className="text-xs text-[var(--luma-gold)] mb-1 font-medium">✨ جملات تاکیدی:</p>
-                <ul className="space-y-1">
-                  {synthesis.affirmations.map((a, i) => (
-                    <li key={i} className="text-xs text-[var(--luma-text-muted)] italic leading-relaxed text-justify" dir="rtl">«{a}»</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </Card>
-        ) : (
-          <Card variant="elevated" padding="md" className="border-amber-500/30">
-            <div className="flex items-center gap-2 mb-2">
-              <Lock className="w-4 h-4 text-amber-400" />
-              <h3 className="font-heading text-sm text-[var(--luma-text)]">تحلیل جامع LUMA</h3>
-            </div>
-            <p className="text-xs text-[var(--luma-text-muted)] mb-3">
-              تفسیر جامع و موقعیت‌محور با تحلیل تم، عنصر غالب و توصیه اختصاصی، مخصوص اشتراک پریمیوم است.
             </p>
-            <Button variant="gold" size="sm" onClick={() => { /* TODO: رفتن به صفحه اشتراک */ }}>
-              <Crown className="w-3 h-3" />
-              ارتقا به پریمیوم
-            </Button>
+            <p className="text-[11px] text-[var(--luma-text-muted)] mt-1">
+              {currentPosition.description}
+            </p>
           </Card>
         )}
 
-        <Button variant="secondary" fullWidth onClick={handleReset}>
-          <ArrowRight className="w-4 h-4" />
-          فال جدید
-        </Button>
+        <div className="flex justify-end">
+          <Button variant="secondary" size="sm" onClick={handleReshuffle}>
+            <RotateCcw className="w-3.5 h-3.5" />
+            بر زدن مجدد کارت‌ها
+          </Button>
+        </div>
+
+        <TarotCardDeck
+          spreadId={selectedSpread.id}
+          positions={selectedSpread.positions}
+          cards={shuffledCards}
+          selected={selectedCardIds}
+          cardCount={selectedSpread.cardCount}
+          shuffleKey={shuffleKey}
+          onCardSelect={handleCardSelect}
+        />
       </div>
     );
   }
 
-  return null;
+  return (
+    <div className="space-y-5 pb-24">
+      <div className="flex items-center justify-between gap-2">
+        <PageHeader title="تاروت" subtitle="۱۳ چیدمان تخصصی و کتابخانه ۷۸ کارت" />
+        <div className="flex items-center gap-1.5">
+          <Button variant="secondary" size="sm" onClick={() => setStep('library')}>
+            <BookOpen className="w-3.5 h-3.5" />
+            کتابخانه
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setStep('history')}>
+            <History className="w-3.5 h-3.5" />
+            تاریخچه
+          </Button>
+        </div>
+      </div>
+
+      <TarotSpreadSelector
+        onSelect={handleSelectSpread}
+        canUseSpread={subscription.canUseSpread}
+      />
+    </div>
+  );
 }
+

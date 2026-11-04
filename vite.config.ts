@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+﻿import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
@@ -10,7 +10,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/*.svg', 'icons/*.png'],
-      manifest: false, // از public/manifest.webmanifest استفاده می‌شود
+      manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2,mp3}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
@@ -19,8 +19,7 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/, /^\/supabase/]
       },
       devOptions: {
-        enabled: true,
-        type: 'module'
+        enabled: false
       }
     })
   ],

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { ZODIAC_DETAILS } from '../../engines/astronomy/constants';
@@ -46,6 +46,8 @@ export function ZodiacScreen({ onBack }: ZodiacScreenProps) {
     ? ZODIAC_DETAILS[selectedZodiac as keyof typeof ZODIAC_DETAILS]
     : null;
 
+  const baseUrl = import.meta.env.BASE_URL;
+
   return (
     <div className="space-y-5">
       <PageHeader title="زودیاک ماه‌ها" subtitle="۱۲ برج غربی و سنگ ماه تولد" onBack={onBack} />
@@ -62,31 +64,29 @@ export function ZodiacScreen({ onBack }: ZodiacScreenProps) {
               key={sign.name}
               className="bg-[var(--luma-bg-elevated)] border border-[var(--luma-border)] rounded-2xl p-4 transition-all duration-200"
             >
-              {/* کلیک روی نماد زودیاک → مودال اطلاعات برج */}
               <button
                 onClick={() => setSelectedZodiac(sign.name)}
                 className="w-full text-right hover:opacity-80 transition-opacity"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <img
-                    src={`/icons/zodiac/${iconName}.svg`}
+                    src={`${baseUrl}icons/zodiac/${iconName}.svg`}
                     alt={sign.nameFa}
                     className="w-10 h-10 zodiac-icon"
                   />
                   <h3 className="font-heading text-sm text-[var(--luma-text)]">{sign.nameFa}</h3>
                 </div>
-                <p className="text-[10px] text-[var(--luma-text-subtle)] mb-1">{sign.dateRange}</p>
-                <p className="text-[9px] text-[var(--luma-text-muted)] mb-1">ماه شمسی: {sign.shamsiMonth}</p>
+                <p className="text-[10px] text-[var(--luma-text-subtle)] mb-1 text-justify">{sign.dateRange}</p>
+                <p className="text-[9px] text-[var(--luma-text-muted)] mb-1 text-justify">ماه شمسی: {sign.shamsiMonth}</p>
                 {birthstone && (
-                  <p className="text-[9px] text-[var(--luma-text-subtle)] mb-1">({birthstone.shamsiRange})</p>
+                  <p className="text-[9px] text-[var(--luma-text-subtle)] mb-1 text-justify">({birthstone.shamsiRange})</p>
                 )}
-                <p className="text-[10px] text-[var(--luma-text-muted)] mb-1">
+                <p className="text-[10px] text-[var(--luma-text-muted)] mb-1 text-justify">
                   عنصر: <span style={{ color: elementColor }}>{sign.elementFa}</span>
                 </p>
                 <p className="text-[9px] text-[var(--luma-gold)]">جزئیات برج ←</p>
               </button>
 
-              {/* کلیک روی سنگ → مودال اطلاعات سنگ */}
               {birthstone && stoneImage && (
                 <button
                   onClick={() => setSelectedStone(birthstone)}
@@ -94,12 +94,12 @@ export function ZodiacScreen({ onBack }: ZodiacScreenProps) {
                 >
                   <div className="flex items-center gap-2">
                     <img
-                      src={`/icons/birthstones/${stoneImage}.png`}
+                      src={`${baseUrl}icons/birthstones/${stoneImage}.png`}
                       alt={birthstone.nameFa}
                       className="w-8 h-8 rounded-full object-cover border border-[var(--luma-gold)]/40 bg-[var(--luma-bg-subtle)]"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] text-[var(--luma-text-muted)]">
+                      <p className="text-[10px] text-[var(--luma-text-muted)] text-justify">
                         💎 سنگ: {birthstone.nameFa}
                       </p>
                       <p className="text-[9px] text-[var(--luma-gold)]">جزئیات سنگ ←</p>
@@ -133,7 +133,7 @@ export function ZodiacScreen({ onBack }: ZodiacScreenProps) {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <img
-                    src={`/icons/zodiac/${ZODIAC_ICONS[zodiacDetail.name]}.svg`}
+                    src={`${baseUrl}icons/zodiac/${ZODIAC_ICONS[zodiacDetail.name]}.svg`}
                     alt={zodiacDetail.nameFa}
                     className="w-16 h-16 zodiac-icon"
                   />
@@ -152,35 +152,35 @@ export function ZodiacScreen({ onBack }: ZodiacScreenProps) {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-justify">
                   <span className="text-[var(--luma-text-muted)]">تاریخ:</span>
                   <span className="text-[var(--luma-text)]">{zodiacDetail.dateRange}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-justify">
                   <span className="text-[var(--luma-text-muted)]">ماه شمسی:</span>
                   <span className="text-[var(--luma-text)]">{zodiacDetail.shamsiMonth}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-justify">
                   <span className="text-[var(--luma-text-muted)]">عنصر:</span>
                   <span style={{ color: ELEMENT_COLORS[zodiacDetail.element] }}>{zodiacDetail.elementFa}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-justify">
                   <span className="text-[var(--luma-text-muted)]">سیاره حاکم:</span>
                   <span className="text-[var(--luma-text)]">{zodiacDetail.rulingPlanetFa}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-justify">
                   <span className="text-[var(--luma-text-muted)]">کیفیت:</span>
                   <span className="text-[var(--luma-text)]">{zodiacDetail.modalityFa}</span>
                 </div>
 
                 <div className="pt-3 border-t border-[var(--luma-border)]">
                   <p className="text-xs text-[var(--luma-text-muted)] mb-1">توضیحات:</p>
-                  <p className="text-sm text-[var(--luma-text)] leading-relaxed">{zodiacDetail.description}</p>
+                  <p className="text-sm text-[var(--luma-text)] leading-relaxed text-justify">{zodiacDetail.description}</p>
                 </div>
 
                 <div className="pt-3 border-t border-[var(--luma-border)]">
                   <p className="text-xs text-[var(--luma-text-muted)] mb-1">ویژگی‌ها:</p>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 text-justify">
                     {zodiacDetail.traits.map((t, i) => (
                       <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]">{t}</span>
                     ))}
@@ -189,15 +189,15 @@ export function ZodiacScreen({ onBack }: ZodiacScreenProps) {
 
                 <div className="pt-3 border-t border-[var(--luma-border)]">
                   <p className="text-xs text-[var(--luma-text-muted)] mb-1">نقاط قوت:</p>
-                  <p className="text-xs text-green-400">{zodiacDetail.strengths.join(' • ')}</p>
+                  <p className="text-xs text-green-400 text-justify">{zodiacDetail.strengths.join(' • ')}</p>
                 </div>
 
                 <div className="pt-3 border-t border-[var(--luma-border)]">
                   <p className="text-xs text-[var(--luma-text-muted)] mb-1">نقاط ضعف:</p>
-                  <p className="text-xs text-amber-400">{zodiacDetail.weaknesses.join(' • ')}</p>
+                  <p className="text-xs text-amber-400 text-justify">{zodiacDetail.weaknesses.join(' • ')}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[var(--luma-border)] text-xs">
+                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[var(--luma-border)] text-xs text-justify">
                   <div>
                     <span className="text-[var(--luma-text-muted)]">رنگ خوش‌شانسی: </span>
                     <span className="text-[var(--luma-text)]">{zodiacDetail.luckyColor}</span>
@@ -234,7 +234,7 @@ export function ZodiacScreen({ onBack }: ZodiacScreenProps) {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <img
-                    src={`/icons/birthstones/${selectedStone.nameEn.toLowerCase()}.png`}
+                    src={`${baseUrl}icons/birthstones/${selectedStone.nameEn.toLowerCase()}.png`}
                     alt={selectedStone.nameFa}
                     className="w-16 h-16 rounded-full object-cover border-2 border-[var(--luma-gold)]/40"
                   />
@@ -253,48 +253,48 @@ export function ZodiacScreen({ onBack }: ZodiacScreenProps) {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-justify">
                   <span className="text-[var(--luma-text-muted)]">رنگ:</span>
                   <span className="text-[var(--luma-text)]">{selectedStone.color}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-justify">
                   <span className="text-[var(--luma-text-muted)]">ماه شمسی:</span>
                   <span className="text-[var(--luma-text)]">{selectedStone.shamsiRange}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-justify">
                   <span className="text-[var(--luma-text-muted)]">عنصر:</span>
                   <span style={{ color: ELEMENT_COLORS[selectedStone.element] }}>
                     {ELEMENT_NAMES_FA[selectedStone.element]}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-justify">
                   <span className="text-[var(--luma-text-muted)]">چاکرا:</span>
                   <span className="text-[var(--luma-text)]">{selectedStone.chakra}</span>
                 </div>
 
                 <div className="pt-3 border-t border-[var(--luma-border)]">
                   <p className="text-xs text-[var(--luma-text-muted)] mb-1">معنی نمادین:</p>
-                  <p className="text-sm text-[var(--luma-text)] leading-relaxed">{selectedStone.meaning}</p>
+                  <p className="text-sm text-[var(--luma-text)] leading-relaxed text-justify">{selectedStone.meaning}</p>
                 </div>
 
                 <div className="pt-3 border-t border-[var(--luma-border)]">
                   <p className="text-xs text-[var(--luma-text-muted)] mb-1">تفسیر استرولوژیکی:</p>
-                  <p className="text-sm text-[var(--luma-text)] leading-relaxed">{selectedStone.astrologyMeaning}</p>
+                  <p className="text-sm text-[var(--luma-text)] leading-relaxed text-justify">{selectedStone.astrologyMeaning}</p>
                 </div>
 
                 <div className="pt-3 border-t border-[var(--luma-border)]">
                   <p className="text-xs text-[var(--luma-text-muted)] mb-1">سنگ خوش‌شانسی برای:</p>
-                  <p className="text-sm text-[var(--luma-gold)]">{selectedStone.luckyFor}</p>
-                {selectedStone.alternativeStones.length > 0 && (
-                  <div className="pt-3 border-t border-[var(--luma-border)]">
-                    <p className="text-xs text-[var(--luma-text-muted)] mb-1">سنگ‌های جایگزین این ماه:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedStone.alternativeStones.map((alt, i) => (
-                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)]">{alt}</span>
-                      ))}
+                  <p className="text-sm text-[var(--luma-gold)] text-justify">{selectedStone.luckyFor}</p>
+                  {selectedStone.alternativeStones.length > 0 && (
+                    <div className="pt-3 border-t border-[var(--luma-border)]">
+                      <p className="text-xs text-[var(--luma-text-muted)] mb-1">سنگ‌های جایگزین این ماه:</p>
+                      <div className="flex flex-wrap gap-1 text-justify">
+                        {selectedStone.alternativeStones.map((alt, i) => (
+                          <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)]">{alt}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
                 </div>
               </div>
             </motion.div>

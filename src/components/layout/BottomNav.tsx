@@ -1,6 +1,6 @@
-import { Home, Sparkles, Star, Hash, Compass, User } from 'lucide-react';
+﻿import { Home, Sparkles, Star, Hash, Compass, User, Orbit } from 'lucide-react';
 
-export type TabId = 'home' | 'chart' | 'tarot' | 'numerology' | 'chinese' | 'profile';
+export type TabId = 'home' | 'cosmic' | 'chart' | 'tarot' | 'numerology' | 'chinese' | 'profile';
 
 interface BottomNavProps {
   active: TabId;
@@ -9,11 +9,12 @@ interface BottomNavProps {
 
 const TABS: { id: TabId; label: string; Icon: typeof Home }[] = [
   { id: 'home', label: 'خانه', Icon: Home },
-  { id: 'chart', label: 'چارت', Icon: Compass },
+  { id: 'cosmic', label: 'چارت من', Icon: Orbit },
   { id: 'tarot', label: 'تاروت', Icon: Sparkles },
+  { id: 'chart', label: 'استرولوژی', Icon: Compass },
   { id: 'numerology', label: 'اعداد', Icon: Hash },
   { id: 'chinese', label: 'چینی', Icon: Star },
-  { id: 'profile', label: 'پروفایل', Icon: User }
+  { id: 'profile', label: 'پروفایل', Icon: User },
 ];
 
 export function BottomNav({ active, onChange }: BottomNavProps) {
@@ -28,13 +29,14 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
           return (
             <button
               key={id}
+              type="button"
               onClick={() => onChange(id)}
               className={[
                 'flex flex-col items-center justify-center gap-1 flex-1 h-full',
                 'transition-all duration-200',
                 isActive
                   ? 'text-[var(--luma-gold)]'
-                  : 'text-[var(--luma-text-subtle)] hover:text-[var(--luma-text-muted)]'
+                  : 'text-[var(--luma-text-subtle)] hover:text-[var(--luma-text-muted)]',
               ].join(' ')}
               aria-label={label}
               aria-current={isActive ? 'page' : undefined}

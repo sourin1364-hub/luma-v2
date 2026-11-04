@@ -1,7 +1,6 @@
-import type {
+﻿import type {
   ReadingResult,
   TarotCard,
-  Spread,
 } from '../types';
 import type {
   CardPositionContext,

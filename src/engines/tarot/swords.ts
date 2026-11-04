@@ -1,4 +1,4 @@
-import type { TarotCard } from './types';
+﻿import type { TarotCard } from './types';
 
 export const SWORDS_CARDS: TarotCard[] = [
   {
@@ -8,7 +8,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 1,
-    imagePath: '/assets/tarot/cards/swords-01-ace.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-01-ace.webp',
     keywords: ['وضوح', 'حقیقت', 'بینش', 'قدرت ذهنی', 'شروع جدید'],
     upright: {
       meaning: 'وضوح و حقیقت. آس شمشیر نماد بینش و قدرت ذهنی است. زمانه‌ای برای بریدن توهمات و دیدن واقعیت.',
@@ -28,7 +28,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 2,
-    imagePath: '/assets/tarot/cards/swords-02.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-02.webp',
     keywords: ['تصمیم', 'تعادل', 'چشم‌بستن', 'تردید', 'بی‌طرفی'],
     upright: {
       meaning: 'تصمیم و تعادل. دو شمشیر نماد تردید و دوراهی است. زمانه‌ای برای اتخاذ تصمیم سخت و یافتن تعادل.',
@@ -48,7 +48,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 3,
-    imagePath: '/assets/tarot/cards/swords-03.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-03.webp',
     keywords: ['دل‌شکستگی', 'اندوه', 'قطع ارتباط', 'خیانت', 'رهایی'],
     upright: {
       meaning: 'دل‌شکستگی و اندوه. سه شمشیر نماد درد عاطفی و قطع ارتباط است. زمانه‌ای برای پذیرش درد و رهاسازی آن.',
@@ -68,7 +68,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 4,
-    imagePath: '/assets/tarot/cards/swords-04.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-04.webp',
     keywords: ['استراحت', 'بازیابی', 'تنهایی', 'آرامش', 'تأمل'],
     upright: {
       meaning: 'استراحت و بازیابی. چهار شمشیر نماد آرامش پس از تنش است. زمانه‌ای برای استراحت و تجدید قوا.',
@@ -88,7 +88,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 5,
-    imagePath: '/assets/tarot/cards/swords-05.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-05.webp',
     keywords: ['تعارض', 'شکست', 'پیروزی بی‌ارزش', 'خودخواهی', 'درس'],
     upright: {
       meaning: 'تعارض و شکست. پنج شمشیر نماد پیروزی بی‌ارزش و خودخواهی است. زمانه‌ای برای پذیرش درس‌های سخت و انتخاب مبارزه‌های ارزشمند.',
@@ -108,7 +108,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 6,
-    imagePath: '/assets/tarot/cards/swords-06.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-06.webp',
     keywords: ['گذار', 'حرکت', 'آرامش پس از طوفان', 'سفر', 'بهبود'],
     upright: {
       meaning: 'گذار و حرکت. شش شمشیر نماد سفر از وضعیت سخت به آرامش است. زمانه‌ای برای حرکت به جلو و بهبود.',
@@ -128,7 +128,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 7,
-    imagePath: '/assets/tarot/cards/swords-07.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-07.webp',
     keywords: ['فریب', 'دزدی', 'مخفی‌کاری', 'حیله', 'فرار'],
     upright: {
       meaning: 'فریب و مخفی‌کاری. هفت شمشیر نماد حیله و فرار است. زمانه‌ای برای هوشیاری در برابر فریب و انتخاب صداقت.',
@@ -148,7 +148,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 8,
-    imagePath: '/assets/tarot/cards/swords-08.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-08.webp',
     keywords: ['محدودیت', 'قید', 'احساس گیر افتادن', 'ترس', 'رهایی'],
     upright: {
       meaning: 'محدودیت و قید. هشت شمشیر نماد احساس گیر افتادن است. زمانه‌ای برای رهایی از محدودیت‌های ذهنی و یافتن راه خروج.',
@@ -168,7 +168,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 9,
-    imagePath: '/assets/tarot/cards/swords-09.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-09.webp',
     keywords: ['اضطراب', 'کابوس', 'نگرانی', 'ترس', 'رهایی از ترس'],
     upright: {
       meaning: 'اضطراب و کابوس. نه شمشیر نماد نگرانی و ترس است. زمانه‌ای برای مواجهه با ترس‌ها و یافتن آرامش.',
@@ -188,7 +188,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 10,
-    imagePath: '/assets/tarot/cards/swords-10.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-10.webp',
     keywords: ['پایان', 'خیانت', 'فروپاشی', 'درس', 'آغاز نو'],
     upright: {
       meaning: 'پایان و فروپاشی. ده شمشیر نماد پایان یک چرخه سخت است. زمانه‌ای برای پذیرش پایان و آغاز دوباره.',
@@ -208,7 +208,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 11,
-    imagePath: '/assets/tarot/cards/swords-11-page.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-11-page.webp',
     keywords: ['کنجکاوی', 'هوش', 'ارتباط', 'جستجو', 'حقیقت'],
     upright: {
       meaning: 'کنجکاوی و هوش. شاهزاده شمشیر نماد جستجوی حقیقت و ارتباط است. زمانه‌ای برای کشف و یادگیری.',
@@ -228,7 +228,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 12,
-    imagePath: '/assets/tarot/cards/swords-12-knight.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-12-knight.webp',
     keywords: ['اقدام', 'سرعت', 'جسارت', 'تعارض', 'حقیقت'],
     upright: {
       meaning: 'اقدام و سرعت. شوالیه شمشیر نماد جسارت و اقدام قاطع است. زمانه‌ای برای حرکت سریع به سوی هدف.',
@@ -248,7 +248,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 13,
-    imagePath: '/assets/tarot/cards/swords-13-queen.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-13-queen.webp',
     keywords: ['وضوح', 'خرد', 'استقلال', 'ارتباط مستقیم', 'صداقت'],
     upright: {
       meaning: 'وضوح و خرد. ملکه شمشیر نماد استقلال و صداقت است. زمانه‌ای برای ارتباط مستقیم و تصمیم‌گیری عاقلانه.',
@@ -268,7 +268,7 @@ export const SWORDS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'swords',
     number: 14,
-    imagePath: '/assets/tarot/cards/swords-14-king.webp',
+    imagePath: '{BASE_URL}/tarot/cards/swords-14-king.webp',
     keywords: ['اقتدار ذهنی', 'خرد', 'عدالت', 'حقیقت', 'رهبری'],
     upright: {
       meaning: 'اقتدار ذهنی و خرد. شاه شمشیر نماد رهبری عاقلانه و عدالت است. زمانه‌ای برای تصمیم‌گیری بر اساس حقیقت و خرد.',

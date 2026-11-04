@@ -1,4 +1,4 @@
-import type { TarotCard } from './types';
+﻿import type { TarotCard } from './types';
 
 export const CUPS_CARDS: TarotCard[] = [
   {
@@ -8,7 +8,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 1,
-    imagePath: '/assets/tarot/cards/cups-01-ace.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-01-ace.webp',
     keywords: ['عشق', 'احساس', 'شهود', 'آغاز عاطفی', 'شفا'],
     upright: {
       meaning: 'آغازی عاطفی و سرریز احساسات. آس جام نماد عشق و شهود است. زمانه‌ای برای پذیرش احساسات و آغاز رابطه‌ای عمیق.',
@@ -28,7 +28,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 2,
-    imagePath: '/assets/tarot/cards/cups-02.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-02.webp',
     keywords: ['اتحاد', 'عشق', 'هماهنگی', 'همکاری', 'جذب'],
     upright: {
       meaning: 'اتحاد و هماهنگی. دو جام نماد عشق و همکاری است. زمانه‌ای برای پیوند عاطفی و همکاری متقابل.',
@@ -48,7 +48,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 3,
-    imagePath: '/assets/tarot/cards/cups-03.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-03.webp',
     keywords: ['جشن', 'دوستی', 'شادی', 'همبستگی', 'خلاقیت'],
     upright: {
       meaning: 'جشن و دوستی. سه جام نماد شادی و همبستگی است. زمانه‌ای برای جشن گرفتن با دوستان و لذت بردن از زندگی.',
@@ -68,7 +68,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 4,
-    imagePath: '/assets/tarot/cards/cups-04.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-04.webp',
     keywords: ['بی‌تفاوتی', 'خستگی', 'تعمق', 'نارضایتی', 'فرصت از دست رفته'],
     upright: {
       meaning: 'بی‌تفاوتی و تعمق. چهار جام نماد خستگی و نارضایتی است. زمانه‌ای برای تأمل و توجه به فرصت‌های جدید.',
@@ -88,7 +88,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 5,
-    imagePath: '/assets/tarot/cards/cups-05.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-05.webp',
     keywords: ['غم', 'اندوه', 'از دست دادن', 'پشیمانی', 'پذیرش'],
     upright: {
       meaning: 'غم و اندوه. پنج جام نماد از دست دادن و پشیمانی است. زمانه‌ای برای پذیرش فقدان و توجه به آنچه باقی مانده.',
@@ -108,7 +108,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 6,
-    imagePath: '/assets/tarot/cards/cups-06.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-06.webp',
     keywords: ['نوستالژی', 'کودکی', 'بخشش', 'خاطرات', 'معصومیت'],
     upright: {
       meaning: 'نوستالژی و معصومیت. شش جام نماد خاطرات و بخشش است. زمانه‌ای برای بازگشت به گذشته و لذت از سادگی.',
@@ -128,7 +128,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 7,
-    imagePath: '/assets/tarot/cards/cups-07.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-07.webp',
     keywords: ['توهم', 'خیال', 'انتخاب', 'سردرگمی', 'آرزو'],
     upright: {
       meaning: 'توهم و انتخاب. هفت جام نماد خیال و سردرگمی است. زمانه‌ای برای تشخیص واقعیت از خیال و انتخاب آگاهانه.',
@@ -148,7 +148,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 8,
-    imagePath: '/assets/tarot/cards/cups-08.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-08.webp',
     keywords: ['ترک کردن', 'جستجو', 'ناامیدی', 'سفر درونی', 'رهایی'],
     upright: {
       meaning: 'ترک کردن و جستجو. هشت جام نماد رهایی از وضعیت ناراضی‌کننده است. زمانه‌ای برای ترک چیزی که دیگر ارزشمند نیست و جستجوی معنا.',
@@ -168,7 +168,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 9,
-    imagePath: '/assets/tarot/cards/cups-09.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-09.webp',
     keywords: ['آرزوی برآورده', 'رضایت', 'شادی', 'وفور', 'لذت'],
     upright: {
       meaning: 'آرزوی برآورده و رضایت. نه جام نماد شادی و وفور است. زمانه‌ای برای لذت بردن از دستاوردها و رضایت از زندگی.',
@@ -188,7 +188,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 10,
-    imagePath: '/assets/tarot/cards/cups-10.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-10.webp',
     keywords: ['خوشبختی', 'خانواده', 'هماهنگی', 'عشق', 'کمال عاطفی'],
     upright: {
       meaning: 'خوشبختی و هماهنگی. ده جام نماد خانواده و عشق کامل است. زمانه‌ای برای شادی خانوادگی و رضایت عاطفی.',
@@ -208,7 +208,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 11,
-    imagePath: '/assets/tarot/cards/cups-11-page.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-11-page.webp',
     keywords: ['شهود', 'خلاقیت', 'کشف عاطفی', 'پیام', 'معصومیت'],
     upright: {
       meaning: 'شهود و خلاقیت. شاهزاده جام نماد کشف عاطفی و پیام است. زمانه‌ای برای پذیرش احساسات جدید و الهام خلاقانه.',
@@ -228,7 +228,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 12,
-    imagePath: '/assets/tarot/cards/cups-12-knight.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-12-knight.webp',
     keywords: ['عشق', 'رمانتیسم', 'پیام عاطفی', 'جذابیت', 'خیال'],
     upright: {
       meaning: 'عشق و رمانتیسم. شوالیه جام نماد پیام عاطفی و جذابیت است. زمانه‌ای برای دنبال کردن قلب و ابراز عشق.',
@@ -248,7 +248,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 13,
-    imagePath: '/assets/tarot/cards/cups-13-queen.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-13-queen.webp',
     keywords: ['شهود', 'مهربانی', 'همدلی', 'آرامش', 'مراقبت'],
     upright: {
       meaning: 'شهود و مهربانی. ملکه جام نماد همدلی و مراقبت است. زمانه‌ای برای گوش دادن به شهود و مراقبت از دیگران.',
@@ -268,7 +268,7 @@ export const CUPS_CARDS: TarotCard[] = [
     arcana: 'minor',
     suit: 'cups',
     number: 14,
-    imagePath: '/assets/tarot/cards/cups-14-king.webp',
+    imagePath: '{BASE_URL}/tarot/cards/cups-14-king.webp',
     keywords: ['تعادل عاطفی', 'خرد', 'همدلی', 'کنترل احساسات', 'پدری'],
     upright: {
       meaning: 'تعادل عاطفی و خرد. شاه جام نماد کنترل احساسات و همدلی است. زمانه‌ای برای هدایت احساسات با خرد و مراقبت.',

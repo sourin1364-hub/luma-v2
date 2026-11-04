@@ -1,101 +1,109 @@
-import type { City, Province, CityWithProvince } from './types';
+﻿import type { CityWithProvince } from './types';
 
 let citiesCache: CityWithProvince[] | null = null;
-let provincesCache: Province[] | null = null;
-let loadPromise: Promise<void> | null = null;
+let provincesCache: any[] | null = null;
 
-async function loadData(): Promise<void> {
-  if (citiesCache && provincesCache) return;
-  if (loadPromise) return loadPromise;
-
-  loadPromise = (async () => {
-    const [citiesRes, provincesRes] = await Promise.all([
-      fetch('/data/iran-cities.json'),
-      fetch('/data/iran-provinces.json')
-    ]);
-    const cities: City[] = await citiesRes.json();
-    const provinces: Province[] = await provincesRes.json();
-
-    const provinceMap = new Map(provinces.map(p => [p.id, p.name]));
-
-    citiesCache = cities.map(city => ({
-      ...city,
-      lat: typeof city.lat === 'string' ? parseFloat(city.lat) : city.lat,
-      lon: typeof city.lon === 'string' ? parseFloat(city.lon) : city.lon,
-      province_name: provinceMap.get(city.province_id) || '',
-      timezone: 'Asia/Tehran'
-    }));
-
-    provincesCache = provinces;
-  })();
-
-  return loadPromise;
+/**
+ * دریافت لیست استان‌ها از فایل JSON
+ */
+export async function getProvinces(): Promise<any[]> {
+  if (provincesCache) return provincesCache;
+  
+  try {
+    const response = await fetch(`${import.meta.env.BASE_URL}data/iran-provinces.json`);
+    if (!response.ok) throw new Error('Failed to fetch provinces');
+    const data = await response.json();
+    provincesCache = data;
+    return data;
+  } catch (error) {
+    console.error('Error fetching provinces:', error);
+    return [];
+  }
 }
 
-export async function searchCities(query: string, limit = 15): Promise<CityWithProvince[]> {
-  await loadData();
-  if (!citiesCache) return [];
-
-  const normalized = normalizePersian(query.trim());
-  if (!normalized) {
-    return citiesCache.slice(0, limit);
-  }
-
-  const results: { city: CityWithProvince; score: number }[] = [];
-
-  for (const city of citiesCache) {
-    const cityNorm = normalizePersian(city.name);
-    const enNorm = (city.en_name || '').toLowerCase();
-    const provNorm = normalizePersian(city.province_name || '');
-    const queryLower = query.toLowerCase();
-
-    let score = 0;
-    if (cityNorm === normalized) score = 100;
-    else if (cityNorm.startsWith(normalized)) score = 80;
-    else if (cityNorm.includes(normalized)) score = 60;
-    else if (provNorm.includes(normalized)) score = 40;
-    else if (enNorm.startsWith(queryLower)) score = 70;
-    else if (enNorm.includes(queryLower)) score = 50;
-
-    if (score > 0) results.push({ city, score });
-  }
-
-  results.sort((a, b) => b.score - a.score);
-  return results.slice(0, limit).map(r => r.city);
-}
-
+/**
+ * دریافت لیست کامل شهرها از فایل JSON
+ * همچنین مختصات را به عدد تبدیل می‌کند و نام استان را اضافه می‌کند
+ */
 export async function getAllCities(): Promise<CityWithProvince[]> {
-  await loadData();
-  return citiesCache || [];
+  if (citiesCache) return citiesCache;
+  
+  try {
+    const [citiesRes, provincesRes] = await Promise.all([
+      fetch(`${import.meta.env.BASE_URL}data/iran-cities.json`),
+      fetch(`${import.meta.env.BASE_URL}data/iran-provinces.json`)
+    ]);
+    
+    if (!citiesRes.ok || !provincesRes.ok) throw new Error('Failed to fetch data');
+    
+    const rawCities = await citiesRes.json();
+    const provinces = await provincesRes.json();
+    
+    // ساخت نقشه استان‌ها
+    const provinceMap: Record<number, string> = {};
+    provinces.forEach((p: any) => {
+      provinceMap[p.id] = p.name;
+    });
+    
+    // تبدیل داده‌های خام به CityWithProvince
+    const processedCities: CityWithProvince[] = rawCities.map((city: any) => ({
+      id: Number(city.id),
+      name: city.name,
+      en_name: city.en_name || '',
+      province_id: Number(city.province_id),
+      province_name: provinceMap[Number(city.province_id)] || '',
+      lat: parseFloat(String(city.lat)),
+      lon: parseFloat(String(city.lon)),
+      timezone: 'Asia/Tehran',
+    }));
+    
+    citiesCache = processedCities;
+    return processedCities;
+  } catch (error) {
+    console.error('Error fetching cities:', error);
+    return [];
+  }
 }
 
+/**
+ * جستجوی شهرها بر اساس نام
+ */
+export async function searchCities(query: string, limit: number = 10): Promise<CityWithProvince[]> {
+  const cities = await getAllCities();
+  const normalizedQuery = query.trim().toLowerCase();
+  
+  if (!normalizedQuery) return [];
+  
+  return cities
+    .filter(city => 
+      city.name.toLowerCase().includes(normalizedQuery) ||
+      city.en_name?.toLowerCase().includes(normalizedQuery) ||
+      city.province_name?.toLowerCase().includes(normalizedQuery)
+    )
+    .slice(0, limit);
+}
+
+/**
+ * پیدا کردن نزدیک‌ترین شهر به مختصات داده‌شده
+ */
 export async function findNearestCity(lat: number, lon: number): Promise<CityWithProvince | null> {
-  await loadData();
-  if (!citiesCache) return null;
+  const cities = await getAllCities();
+  if (cities.length === 0) return null;
 
   let nearest: CityWithProvince | null = null;
-  let minDist = Infinity;
+  let minDistance = Infinity;
 
-  for (const city of citiesCache) {
-    const dLat = city.lat - lat;
-    const dLon = city.lon - lon;
-    const dist = dLat * dLat + dLon * dLon;
-    if (dist < minDist) {
-      minDist = dist;
+  for (const city of cities) {
+    const distance = Math.sqrt(
+      Math.pow(city.lat - lat, 2) + 
+      Math.pow(city.lon - lon, 2)
+    );
+
+    if (distance < minDistance) {
+      minDistance = distance;
       nearest = city;
     }
   }
 
   return nearest;
-}
-
-function normalizePersian(input: string): string {
-  return input
-    .replace(/[\u064B-\u0652]/g, '')
-    .replace(/ي/g, 'ی')
-    .replace(/ك/g, 'ک')
-    .replace(/ة/g, 'ه')
-    .replace(/[أإآ]/g, 'ا')
-    .replace(/[^\u0600-\u06FF\s]/g, '')
-    .trim();
 }

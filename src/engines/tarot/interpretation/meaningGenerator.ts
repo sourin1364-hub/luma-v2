@@ -1,5 +1,5 @@
-import type { TarotCard } from '../types';
-import type { PositionTemplate } from './positionTemplates';
+﻿import type { TarotCard } from '../types';
+
 import { getTemplatesForSpread } from './positionTemplates';
 import { getPositionSpecificMeaning } from './positionMeanings';
 

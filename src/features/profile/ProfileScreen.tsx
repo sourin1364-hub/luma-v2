@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -13,15 +13,23 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { LogOut, Save, Loader2, User, Calendar, Heart, Star, Crown, Shield } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
-  getProfile, updateProfile, getBirthProfile, saveBirthProfile,
-  uploadAvatar, signOutUser
+  getProfile,
+  updateProfile,
+  getBirthProfile,
+  saveBirthProfile,
+  uploadAvatar,
+  signOutUser,
 } from './profileService';
 import type { ProfileData, BirthProfile } from './types';
 import type { CityWithProvince } from '../../engines/location';
 import { getZodiacFromBirthDate, getBirthstoneFromBirthDate } from '../../engines/zodiac';
+import { getAssetUrl } from '../../utils/assetPath';
 
 const ELEMENT_COLORS: Record<string, string> = {
-  fire: '#EF4444', earth: '#10B981', air: '#3B82F6', water: '#8B5CF6'
+  fire: '#EF4444',
+  earth: '#10B981',
+  air: '#3B82F6',
+  water: '#8B5CF6',
 };
 
 export function ProfileScreen() {
@@ -65,8 +73,13 @@ export function ProfileScreen() {
           setMotherName(b.motherName || '');
           if (b.birthCity) {
             setCity({
-              id: 0, name: b.birthCity, en_name: b.birthCityEn, province_id: 0,
-              province_name: b.birthProvince, lat: b.latitude, lon: b.longitude,
+              id: 0,
+              name: b.birthCity,
+              en_name: b.birthCityEn,
+              province_id: 0,
+              province_name: b.birthProvince,
+              lat: b.latitude,
+              lon: b.longitude,
               timezone: b.timezone,
             });
           }
@@ -90,13 +103,43 @@ export function ProfileScreen() {
   const handleAvatarUpload = async (file: File) => {
     if (!user) return;
     setIsUploadingAvatar(true);
+    setMessage(null);
     try {
       const url = await uploadAvatar(user.id, file);
-      await updateProfile(user.id, { avatarUrl: url, displayName, username: profile?.username });
-      setProfile((prev) => prev ? { ...prev, avatarUrl: url } : { displayName, username: '', avatarUrl: url });
+      await updateProfile(user.id, {
+        avatarUrl: url,
+        displayName,
+        username: profile?.username || user.username,
+      });
+      setProfile((prev) =>
+        prev ? { ...prev, avatarUrl: url } : { displayName, username: user.username, avatarUrl: url }
+      );
       setMessage({ type: 'success', text: 'آواتار با موفقیت به‌روزرسانی شد' });
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'خطا در آپلود' });
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'خطا در آپلود آواتار' });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handlePresetAvatarSelect = async (presetValue: string) => {
+    if (!user) return;
+    setIsUploadingAvatar(true);
+    setMessage(null);
+    try {
+      await updateProfile(user.id, {
+        avatarUrl: presetValue,
+        displayName,
+        username: profile?.username || user.username,
+      });
+      setProfile((prev) =>
+        prev
+          ? { ...prev, avatarUrl: presetValue }
+          : { displayName, username: user.username, avatarUrl: presetValue }
+      );
+      setMessage({ type: 'success', text: 'نماد آواتار با موفقیت ذخیره شد' });
+    } catch (err) {
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'خطا در ذخیره آواتار' });
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -113,31 +156,33 @@ export function ProfileScreen() {
         avatarUrl: profile?.avatarUrl || null,
       });
 
-      if (city) {
-        const birthData: BirthProfile = {
-          year: birthDate.year, month: birthDate.month, day: birthDate.day,
-          birthTime: `${String(birthTime.hour).padStart(2, '0')}:${String(birthTime.minute).padStart(2, '0')}`,
-          birthCity: city.name, birthCityEn: city.en_name,
-          birthProvince: city.province_name,
-          latitude: city.lat, longitude: city.lon,
-          timezone: city.timezone || 'Asia/Tehran',
-          motherName,
-        };
-        await saveBirthProfile(user.id, birthData);
+      const birthData: BirthProfile = {
+        year: birthDate.year,
+        month: birthDate.month,
+        day: birthDate.day,
+        birthTime: `${String(birthTime.hour).padStart(2, '0')}:${String(birthTime.minute).padStart(2, '0')}`,
+        birthCity: city?.name || 'تهران',
+        birthCityEn: city?.en_name || 'Tehran',
+        birthProvince: city?.province_name || 'تهران',
+        latitude: city?.lat ?? 35.6892,
+        longitude: city?.lon ?? 51.3890,
+        timezone: city?.timezone || 'Asia/Tehran',
+        motherName,
+      };
+      await saveBirthProfile(user.id, birthData);
 
-        try {
-          const z = getZodiacFromBirthDate(birthDate);
-          const st = getBirthstoneFromBirthDate(birthDate);
-          setZodiacInfo(z);
-          setBirthstoneInfo(st);
-        } catch (e) {
-          console.error('Zodiac recalculation error:', e);
-        }
+      try {
+        const z = getZodiacFromBirthDate(birthDate);
+        const st = getBirthstoneFromBirthDate(birthDate);
+        setZodiacInfo(z);
+        setBirthstoneInfo(st);
+      } catch (e) {
+        console.error('Zodiac recalculation error:', e);
       }
 
       setMessage({ type: 'success', text: 'اطلاعات با موفقیت ذخیره شد' });
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'خطا در ذخیره' });
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'خطا در ذخیره اطلاعات' });
     } finally {
       setIsSaving(false);
     }
@@ -148,7 +193,7 @@ export function ProfileScreen() {
       await signOutUser();
       logout();
     } catch (err) {
-      setMessage({ type: 'error', text: 'خطا در خروج' });
+      setMessage({ type: 'error', text: 'خطا در خروج از حساب' });
     }
   };
 
@@ -168,14 +213,23 @@ export function ProfileScreen() {
     );
   }
 
+  const zodiacIconPath = zodiacInfo?.signEn
+    ? getAssetUrl(`icons/zodiac/${zodiacInfo.signEn.charAt(0).toUpperCase() + zodiacInfo.signEn.slice(1)}.svg`)
+    : '';
+
+  const birthstoneIconPath = birthstoneInfo?.nameEn
+    ? getAssetUrl(`icons/birthstones/${birthstoneInfo.nameEn.toLowerCase()}.png`)
+    : '';
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-20">
       <PageHeader title="پروفایل من" subtitle="اطلاعات شخصی و تولد" />
 
       <Card variant="elevated" padding="lg" className="text-center">
         <AvatarPicker
           currentUrl={profile?.avatarUrl || null}
-          onSelect={handleAvatarUpload}
+          onSelectFile={handleAvatarUpload}
+          onSelectPreset={handlePresetAvatarSelect}
           isLoading={isUploadingAvatar}
         />
         <div className="flex items-center justify-center gap-2 mt-4">
@@ -187,7 +241,9 @@ export function ProfileScreen() {
             variant="compact"
           />
         </div>
-        <p className="text-xs text-[var(--luma-text-muted)] mt-1" dir="ltr">{user?.email}</p>
+        <p className="text-xs text-[var(--luma-text-muted)] mt-1" dir="ltr">
+          {user?.email}
+        </p>
       </Card>
 
       {!subscription.isLoading && (
@@ -214,20 +270,23 @@ export function ProfileScreen() {
           <div className="grid grid-cols-2 gap-3">
             <div className="text-center p-3 rounded-xl bg-[var(--luma-bg-subtle)]">
               <img
-                src={`/icons/zodiac/${zodiacInfo.signEn.charAt(0).toUpperCase() + zodiacInfo.signEn.slice(1)}.svg`}
+                src={zodiacIconPath}
                 alt={zodiacInfo.signFa}
-                className="w-12 h-12 mx-auto mb-2 zodiac-icon"
+                className="w-12 h-12 mx-auto mb-2 zodiac-icon object-contain"
               />
               <p className="text-[10px] text-[var(--luma-text-muted)]">برج</p>
               <p className="font-heading text-sm text-[var(--luma-text)]">{zodiacInfo.signFa}</p>
               <p className="text-[9px] text-[var(--luma-text-subtle)] mt-1">{zodiacInfo.dateRange}</p>
-              <p className="text-[9px] mt-1" style={{ color: ELEMENT_COLORS[zodiacInfo.element] }}>
-                {zodiacInfo.elementFa}
+              <p
+                className="text-[9px] mt-1 font-medium"
+                style={{ color: ELEMENT_COLORS[zodiacInfo.element] || 'var(--luma-gold)' }}
+              >
+                عنصر {zodiacInfo.elementFa}
               </p>
             </div>
             <div className="text-center p-3 rounded-xl bg-[var(--luma-bg-subtle)]">
               <img
-                src={`/icons/birthstones/${birthstoneInfo.nameEn.toLowerCase()}.png`}
+                src={birthstoneIconPath}
                 alt={birthstoneInfo.nameFa}
                 className="w-12 h-12 mx-auto mb-2 rounded-full object-cover border-2 border-[var(--luma-gold)]/40"
               />
@@ -274,7 +333,7 @@ export function ProfileScreen() {
           <div>
             <label className="flex items-center gap-1.5 text-xs text-[var(--luma-text-muted)] mb-1">
               <Heart className="w-3 h-3" />
-              نام مادر (اختیاری)
+              نام مادر (اختیاری - برای محاسبه دقیق ابجد)
             </label>
             <input
               type="text"
@@ -288,12 +347,14 @@ export function ProfileScreen() {
       </Card>
 
       {message && (
-        <div className={
-          'p-3 rounded-lg text-xs text-center ' +
-          (message.type === 'success'
-            ? 'bg-green-500/10 border border-green-500/30 text-green-400'
-            : 'bg-red-500/10 border border-red-500/30 text-red-400')
-        }>
+        <div
+          className={
+            'p-3 rounded-lg text-xs text-center ' +
+            (message.type === 'success'
+              ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+              : 'bg-red-500/10 border border-red-500/30 text-red-400')
+          }
+        >
           {message.text}
         </div>
       )}
@@ -301,9 +362,15 @@ export function ProfileScreen() {
       <div className="space-y-3">
         <Button variant="gold" fullWidth size="lg" onClick={handleSave} disabled={isSaving}>
           {isSaving ? (
-            <><Loader2 className="w-4 h-4 animate-spin" />در حال ذخیره...</>
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              در حال ذخیره...
+            </>
           ) : (
-            <><Save className="w-4 h-4" />ذخیره تغییرات</>
+            <>
+              <Save className="w-4 h-4" />
+              ذخیره تغییرات
+            </>
           )}
         </Button>
 
@@ -320,7 +387,8 @@ export function ProfileScreen() {
         </Button>
 
         <Button variant="danger" fullWidth onClick={handleLogout}>
-          <LogOut className="w-4 h-4" />خروج از حساب
+          <LogOut className="w-4 h-4" />
+          خروج از حساب
         </Button>
       </div>
     </div>

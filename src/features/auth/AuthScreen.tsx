@@ -1,13 +1,13 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '../../components/ui/Logo';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { Mail, Lock, User, Sparkles, ArrowLeft, Loader2, CheckCircle2, KeyRound } from 'lucide-react';
+import { Mail, Lock, User, ArrowLeft, Loader2, CheckCircle2, KeyRound } from 'lucide-react';
 import { signIn, signUp, sendOtp, verifyOtp, resetPassword } from './authService';
 import { useAuthStore } from '../../store/useAuthStore';
 
-type Mode = 'signin' | 'signup' | 'otp' | 'reset';
+type Mode = 'signin' | 'signup' | 'otp-request' | 'otp-verify' | 'reset';
 
 export function AuthScreen() {
   const setUser = useAuthStore((s) => s.setUser);
@@ -56,17 +56,20 @@ export function AuthScreen() {
     }
   };
 
-  // ارسال کد OTP
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) {
+      setError('لطفاً ایمیل خود را وارد کنید');
+      return;
+    }
     setIsLoading(true);
     setError(null);
     setSuccess(null);
     try {
-      await sendOtp(email, mode === 'signup' ? username : undefined);
+      await sendOtp(email);
       setOtpEmail(email);
-      setMode('otp');
-      setSuccess('کد ۶ رقمی به ایمیل شما ارسال شد. صندوق ورودی را بررسی کنید.');
+      setMode('otp-verify');
+      setSuccess('کد ۶ رقمی به ایمیل شما ارسال شد. صندوق ورودی یا اسپم را بررسی کنید.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'خطا در ارسال کد');
     } finally {
@@ -74,7 +77,6 @@ export function AuthScreen() {
     }
   };
 
-  // تأیید کد OTP
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -96,7 +98,7 @@ export function AuthScreen() {
     setSuccess(null);
     try {
       await resetPassword(email);
-      setSuccess('لینک بازیابی رمز به ایمیل شما ارسال شد.');
+      setSuccess('لینک بازیابی رمز عبور به ایمیل شما ارسال شد.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'خطا در ارسال لینک');
     } finally {
@@ -122,11 +124,14 @@ export function AuthScreen() {
         className="w-full max-w-sm"
       >
         <Card variant="elevated" padding="lg">
-          {/* تب‌ها */}
           {(mode === 'signin' || mode === 'signup') && (
             <div className="flex bg-[var(--luma-bg-subtle)] rounded-xl p-1 mb-5">
               <button
-                onClick={() => { setMode('signin'); resetForm(); }}
+                type="button"
+                onClick={() => {
+                  setMode('signin');
+                  resetForm();
+                }}
                 className={
                   'flex-1 py-2 rounded-lg text-sm font-medium transition-all ' +
                   (mode === 'signin'
@@ -137,7 +142,11 @@ export function AuthScreen() {
                 ورود
               </button>
               <button
-                onClick={() => { setMode('signup'); resetForm(); }}
+                type="button"
+                onClick={() => {
+                  setMode('signup');
+                  resetForm();
+                }}
                 className={
                   'flex-1 py-2 rounded-lg text-sm font-medium transition-all ' +
                   (mode === 'signup'
@@ -158,23 +167,38 @@ export function AuthScreen() {
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.2 }}
               onSubmit={
-                mode === 'signin' ? handleSignIn :
-                mode === 'signup' ? handleSignUp :
-                mode === 'otp' ? handleVerifyOtp :
-                handleReset
+                mode === 'signin'
+                  ? handleSignIn
+                  : mode === 'signup'
+                  ? handleSignUp
+                  : mode === 'otp-request'
+                  ? handleSendOtp
+                  : mode === 'otp-verify'
+                  ? handleVerifyOtp
+                  : handleReset
               }
               className="space-y-3"
             >
-              {/* عنوان حالت‌ها */}
-              {mode === 'otp' && (
+              {mode === 'otp-request' && (
+                <div className="text-center mb-3">
+                  <KeyRound className="w-6 h-6 text-[var(--luma-gold)] mx-auto mb-2" />
+                  <h3 className="font-heading text-base text-[var(--luma-text)]">ورود با کد یکبارمصرف</h3>
+                  <p className="text-xs text-[var(--luma-text-muted)] mt-1">
+                    ایمیل خود را وارد کنید تا کد ۶ رقمی برایتان ارسال شود
+                  </p>
+                </div>
+              )}
+
+              {mode === 'otp-verify' && (
                 <div className="text-center mb-3">
                   <KeyRound className="w-6 h-6 text-[var(--luma-gold)] mx-auto mb-2" />
                   <h3 className="font-heading text-base text-[var(--luma-text)]">کد تأیید را وارد کنید</h3>
                   <p className="text-xs text-[var(--luma-text-muted)] mt-1">
-                    کد ۶ رقمی به {otpEmail} ارسال شد
+                    کد به {otpEmail} ارسال شد
                   </p>
                 </div>
               )}
+
               {mode === 'reset' && (
                 <div className="text-center mb-3">
                   <Lock className="w-6 h-6 text-[var(--luma-gold)] mx-auto mb-2" />
@@ -183,7 +207,6 @@ export function AuthScreen() {
                 </div>
               )}
 
-              {/* نام کاربری */}
               {mode === 'signup' && (
                 <div className="relative">
                   <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--luma-text-muted)]" />
@@ -191,15 +214,14 @@ export function AuthScreen() {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="نام کاربری"
+                    placeholder="نام نمایشی یا کاربری"
                     required
                     className="w-full pr-10 pl-4 py-3 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] transition-colors text-sm"
                   />
                 </div>
               )}
 
-              {/* ایمیل */}
-              {mode !== 'otp' && (
+              {mode !== 'otp-verify' && (
                 <div className="relative">
                   <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--luma-text-muted)]" />
                   <input
@@ -214,7 +236,6 @@ export function AuthScreen() {
                 </div>
               )}
 
-              {/* رمز */}
               {(mode === 'signin' || mode === 'signup') && (
                 <div className="relative">
                   <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--luma-text-muted)]" />
@@ -222,7 +243,7 @@ export function AuthScreen() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="رمز عبور"
+                    placeholder="رمز عبور (حداقل ۶ کاراکتر)"
                     required
                     minLength={6}
                     className="w-full pr-10 pl-4 py-3 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] transition-colors text-sm"
@@ -230,15 +251,14 @@ export function AuthScreen() {
                 </div>
               )}
 
-              {/* کد OTP */}
-              {mode === 'otp' && (
+              {mode === 'otp-verify' && (
                 <div className="relative">
                   <KeyRound className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--luma-text-muted)]" />
                   <input
                     type="text"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="کد ۶ رقمی"
+                    placeholder="------"
                     required
                     inputMode="numeric"
                     pattern="[0-9]{6}"
@@ -249,88 +269,74 @@ export function AuthScreen() {
                 </div>
               )}
 
-              {/* خطا */}
               {error && (
                 <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30">
-                  <p className="text-xs text-red-400 text-center">{error}</p>
+                  <p className="text-xs text-red-400 text-center leading-relaxed">{error}</p>
                 </div>
               )}
 
-              {/* موفقیت */}
               {success && (
                 <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30 flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-green-400">{success}</p>
+                  <p className="text-xs text-green-400 leading-relaxed">{success}</p>
                 </div>
               )}
 
-              {/* دکمه */}
-              <Button
-                type="submit"
-                variant="gold"
-                fullWidth
-                size="lg"
-                disabled={isLoading}
-              >
+              <Button type="submit" variant="gold" fullWidth size="lg" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     در حال پردازش...
                   </>
-                ) : mode === 'signin' ? 'ورود' :
-                  mode === 'signup' ? 'ثبت‌نام' :
-                  mode === 'otp' ? 'تأیید کد' :
-                  'ارسال لینک بازیابی'}
+                ) : mode === 'signin' ? (
+                  'ورود به حساب'
+                ) : mode === 'signup' ? (
+                  'ایجاد حساب کاربری'
+                ) : mode === 'otp-request' ? (
+                  'ارسال کد یکبارمصرف'
+                ) : mode === 'otp-verify' ? (
+                  'تأیید و ورود'
+                ) : (
+                  'ارسال لینک بازیابی'
+                )}
               </Button>
 
-              {/* لینک‌های کمکی */}
               <div className="flex flex-col gap-2 pt-2 text-center">
                 {mode === 'signin' && (
                   <>
                     <button
                       type="button"
-                      onClick={() => { setMode('otp'); resetForm(); }}
+                      onClick={() => {
+                        setMode('otp-request');
+                        resetForm();
+                      }}
                       className="text-xs text-[var(--luma-gold)] hover:underline"
                     >
                       ورود با کد یکبارمصرف (بدون رمز)
                     </button>
                     <button
                       type="button"
-                      onClick={() => { setMode('reset'); resetForm(); }}
+                      onClick={() => {
+                        setMode('reset');
+                        resetForm();
+                      }}
                       className="text-xs text-[var(--luma-text-muted)] hover:text-[var(--luma-text)]"
                     >
                       رمز عبور را فراموش کرده‌اید؟
                     </button>
                   </>
                 )}
-                {mode === 'otp' && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleSendOtp}
-                      disabled={isLoading}
-                      className="text-xs text-[var(--luma-gold)] hover:underline disabled:opacity-50"
-                    >
-                      ارسال مجدد کد
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setMode('signin'); resetForm(); }}
-                      className="text-xs text-[var(--luma-text-muted)] hover:text-[var(--luma-text)] flex items-center justify-center gap-1"
-                    >
-                      <ArrowLeft className="w-3 h-3" />
-                      بازگشت به ورود
-                    </button>
-                  </>
-                )}
-                {mode === 'reset' && (
+                {(mode === 'otp-request' || mode === 'otp-verify' || mode === 'reset') && (
                   <button
                     type="button"
-                    onClick={() => { setMode('signin'); resetForm(); }}
+                    onClick={() => {
+                      setMode('signin');
+                      resetForm();
+                    }}
                     className="text-xs text-[var(--luma-text-muted)] hover:text-[var(--luma-text)] flex items-center justify-center gap-1"
                   >
                     <ArrowLeft className="w-3 h-3" />
-                    بازگشت به ورود
+                    بازگشت به صفحه ورود
                   </button>
                 )}
               </div>
@@ -338,14 +344,6 @@ export function AuthScreen() {
           </AnimatePresence>
         </Card>
       </motion.div>
-
-      <p className="mt-8 text-[10px] text-[var(--luma-text-subtle)] text-center max-w-xs leading-relaxed">
-        با ورود، شما با{' '}
-        <a href="/terms" className="text-[var(--luma-gold)] hover:underline">شرایط استفاده</a>
-        {' '}و{' '}
-        <a href="/privacy" className="text-[var(--luma-gold)] hover:underline">حریم خصوصی</a>
-        {' '}لوما موافقت می‌کنید.
-      </p>
     </div>
   );
 }

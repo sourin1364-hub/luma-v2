@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabase';
+﻿import { supabase } from '../../lib/supabase';
 import type { AuthUser, SignUpData, SignInData } from './types';
 
 function mapUser(user: any): AuthUser {
@@ -12,25 +12,79 @@ function mapUser(user: any): AuthUser {
   };
 }
 
+async function ensureProfileExists(userId: string, username: string): Promise<void> {
+  try {
+    const cleanUsername = username.trim() || `user_${userId.slice(0, 6)}`;
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (!existing) {
+      const uniqueUsername = `${cleanUsername}_${Math.floor(100 + Math.random() * 900)}`;
+      await supabase.from('profiles').upsert(
+        {
+          id: userId,
+          username: uniqueUsername,
+          display_name: cleanUsername,
+          role: 'user',
+          plan: 'free',
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      );
+    }
+  } catch (e) {
+    console.warn('Profile ensure warning:', e);
+  }
+}
+
 export async function signUp(data: SignUpData): Promise<AuthUser> {
-  const { data: result, error } = await supabase.auth.signUp({
-    email: data.email,
+  const cleanEmail = data.email.trim().toLowerCase();
+  const cleanUsername = data.username.trim() || cleanEmail.split('@')[0];
+
+  // تلاش اول با متادیتا
+  let { data: result, error } = await supabase.auth.signUp({
+    email: cleanEmail,
     password: data.password,
     options: {
       data: {
-        username: data.username,
-        display_name: data.username,
+        username: cleanUsername,
+        display_name: cleanUsername,
       },
     },
   });
+
+  // اگر تریگر دیتابیس به دلیل تداخل نام کاربری خطای Database error saving new user داد،
+  // با نام کاربری یکتا مجدداً تلاش می‌کنیم تا ثبت‌نام بدون خطا انجام شود
+  if (error && error.message.toLowerCase().includes('database error')) {
+    const uniqueSuffix = Math.floor(1000 + Math.random() * 9000);
+    const fallbackUsername = `${cleanUsername}_${uniqueSuffix}`;
+    const retry = await supabase.auth.signUp({
+      email: cleanEmail,
+      password: data.password,
+      options: {
+        data: {
+          username: fallbackUsername,
+          display_name: cleanUsername,
+        },
+      },
+    });
+    result = retry.data;
+    error = retry.error;
+  }
+
   if (error) throw new Error(translateAuthError(error.message));
-  if (!result.user) throw new Error('خطا در ایجاد حساب');
+  if (!result?.user) throw new Error('خطا در ایجاد حساب کاربری');
+
+  await ensureProfileExists(result.user.id, cleanUsername);
   return mapUser(result.user);
 }
 
 export async function signIn(data: SignInData): Promise<AuthUser> {
   const { data: result, error } = await supabase.auth.signInWithPassword({
-    email: data.email,
+    email: data.email.trim().toLowerCase(),
     password: data.password,
   });
   if (error) throw new Error(translateAuthError(error.message));
@@ -44,16 +98,20 @@ export async function signOut(): Promise<void> {
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
   return mapUser(user);
 }
 
-export async function sendOtp(email: string): Promise<void> {
+export async function sendOtp(email: string, username?: string): Promise<void> {
+  const cleanEmail = email.trim().toLowerCase();
   const { error } = await supabase.auth.signInWithOtp({
-    email,
+    email: cleanEmail,
     options: {
       shouldCreateUser: true,
+      data: username ? { username, display_name: username } : undefined,
     },
   });
   if (error) throw new Error(translateAuthError(error.message));
@@ -61,18 +119,19 @@ export async function sendOtp(email: string): Promise<void> {
 
 export async function verifyOtp(email: string, token: string): Promise<AuthUser> {
   const { data, error } = await supabase.auth.verifyOtp({
-    email,
-    token,
+    email: email.trim().toLowerCase(),
+    token: token.trim(),
     type: 'email',
   });
   if (error) throw new Error(translateAuthError(error.message));
   if (!data.user) throw new Error('کد نامعتبر است');
+  await ensureProfileExists(data.user.id, data.user.email?.split('@')[0] || 'user');
   return mapUser(data.user);
 }
 
 export async function resetPassword(email: string): Promise<void> {
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/reset-password',
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: window.location.origin + import.meta.env.BASE_URL,
   });
   if (error) throw new Error(translateAuthError(error.message));
 }
@@ -93,15 +152,18 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
 }
 
 function translateAuthError(message: string): string {
+  if (message.toLowerCase().includes('database error saving new user')) {
+    return 'خطای دیتابیس در ثبت کاربر جدید: لطفاً اسکریپت تعمیر تریگر جدول profiles را در SQL Editor پنل Supabase اجرا کنید یا نام کاربری دیگری امتحان نمایید.';
+  }
   const map: Record<string, string> = {
     'Invalid login credentials': 'ایمیل یا رمز عبور اشتباه است',
-    'Email not confirmed': 'لطفاً ایمیل خود را تأیید کنید',
-    'User already registered': 'این ایمیل قبلاً ثبت‌نام کرده است',
+    'Email not confirmed': 'لطفاً ابتدا ایمیل خود را تأیید کنید',
+    'User already registered': 'این ایمیل قبلاً ثبت‌نام شده است. از بخش ورود وارد شوید.',
     'Password should be at least 6 characters': 'رمز عبور باید حداقل ۶ کاراکتر باشد',
-    'Unable to validate email address: invalid format': 'فرمت ایمیل نامعتبر است',
-    'Email rate limit exceeded': 'تعداد درخواست‌ها زیاد است. لطفاً کمی صبر کنید',
-    'Token has expired or is invalid': 'کد منقضی شده یا نامعتبر است',
-    'Invalid OTP': 'کد وارد شده نامعتبر است',
+    'Unable to validate email address: invalid format': 'فرمت ایمیل وارد شده نامعتبر است',
+    'Email rate limit exceeded': 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً چند دقیقه صبر کنید',
+    'Token has expired or is invalid': 'کد تأیید منقضی شده یا نامعتبر است',
+    'Invalid OTP': 'کد وارد شده صحیح نیست',
   };
   return map[message] || message;
 }

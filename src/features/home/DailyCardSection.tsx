@@ -1,139 +1,164 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Sparkles, Moon, RefreshCw } from 'lucide-react';
-import { ALL_TAROT_CARDS, getCardById } from '../../engines/tarot';
+import { ALL_TAROT_CARDS } from '../../engines/tarot';
+import { useAuthStore } from '../../store/useAuthStore';
+import { getAssetUrl } from '../../utils/assetPath';
+import { playCardFlipSound } from '../../utils/audio';
+import { Sparkles, RotateCcw, Clock } from 'lucide-react';
 
-interface DailyCard {
-  cardId: string;
-  isReversed: boolean;
-  date: string;
+/**
+ * تولید عدد هش قطعی از رشته (ترکیب شناسه کاربر + تاریخ روز)
+ * تضمین می‌کند کارت روزانه هر شخص منحصربه‌فرد باشد و راس هر ۲۴ ساعت عوض شود.
+ */
+function hashString(str: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return Math.abs(hash);
 }
 
-const STORAGE_KEY = 'luma_daily_card';
+export function DailyCardSection() {
+  const user = useAuthStore((s) => s.user);
 
-function getTodayString(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function getOrCreateDailyCard(): DailyCard {
-  const today = getTodayString();
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed: DailyCard = JSON.parse(stored);
-      if (parsed.date === today) {
-        return parsed;
-      }
-    }
-  } catch { /* ignore */ }
-
-  // کارت جدید برای امروز
-  const randomIndex = Math.floor(Math.random() * ALL_TAROT_CARDS.length);
-  const card = ALL_TAROT_CARDS[randomIndex];
-  const isReversed = Math.random() < 0.3;
-  const dailyCard: DailyCard = { cardId: card.id, isReversed, date: today };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(dailyCard));
-  return dailyCard;
-}
-
-interface DailyCardSectionProps {
-  onNavigateToTarot: () => void;
-}
-
-export function DailyCardSection({ onNavigateToTarot }: DailyCardSectionProps) {
-  const [daily, setDaily] = useState<DailyCard | null>(null);
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    setDaily(getOrCreateDailyCard());
+  // کلید تاریخ ۲۴ ساعته بر اساس سال، ماه و روز جاری
+  const todayKey = useMemo(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
   }, []);
 
-  if (!daily) return null;
-  const card = getCardById(daily.cardId);
-  if (!card) return null;
+  const userStorageKey = `luma_daily_revealed_${user?.id || 'guest'}_${todayKey}`;
 
-  const meaning = daily.isReversed ? card.reversed.meaning : card.upright.meaning;
-  const keywords = daily.isReversed ? card.reversed.keywords : card.upright.keywords;
+  const [isRevealed, setIsRevealed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(userStorageKey) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      setIsRevealed(localStorage.getItem(userStorageKey) === 'true');
+    } catch {}
+  }, [userStorageKey]);
+
+  const { dailyCard, isReversed } = useMemo(() => {
+    const uniqueSeedString = `${user?.id || 'luma-guest'}-${user?.email || ''}-${todayKey}`;
+    const hashValue = hashString(uniqueSeedString);
+    const cardIndex = hashValue % ALL_TAROT_CARDS.length;
+    const reversed = (hashValue >> 4) % 10 < 3; // ۳۰٪ احتمال معکوس بودن مختص همان شخص در همان روز
+    return {
+      dailyCard: ALL_TAROT_CARDS[cardIndex] || ALL_TAROT_CARDS[0],
+      isReversed: reversed,
+    };
+  }, [user?.id, user?.email, todayKey]);
+
+  const handleReveal = () => {
+    if (!isRevealed) {
+      playCardFlipSound();
+      setIsRevealed(true);
+      try {
+        localStorage.setItem(userStorageKey, 'true');
+      } catch {}
+    }
+  };
+
+  const backImg = getAssetUrl('assets/tarot/cards/back.webp');
+  const frontImg = getAssetUrl(`assets/tarot/cards/${dailyCard.id}.webp`);
 
   return (
-    <Card variant="gold-border" padding="lg" className="text-center">
-      <div className="flex items-center justify-center gap-2 mb-3">
-        <Moon className="w-5 h-5 text-[var(--luma-gold)]" />
-        <h3 className="font-heading text-lg text-[var(--luma-text)]">فال روزانه</h3>
-      </div>
-
-      {/* کارت */}
-      <div
-        className="relative mx-auto w-32 cursor-pointer mb-3"
-        onClick={() => setRevealed(!revealed)}
-        style={{ perspective: '1000px' }}
-      >
-        <div
-          className="relative aspect-[2/3] transition-transform duration-700"
-          style={{
-            transformStyle: 'preserve-3d',
-            transform: revealed ? 'rotateY(180deg)' : 'rotateY(0)'
-          }}
-        >
-          {/* پشت */}
-          <div
-            className="absolute inset-0 rounded-xl border-2 border-[var(--luma-gold)]/40 overflow-hidden"
-            style={{ backfaceVisibility: 'hidden' }}
-          >
-            <img
-              src="/assets/tarot/cards/back.webp"
-              alt="پشت کارت"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {/* رو */}
-          <div
-            className="absolute inset-0 rounded-xl border-2 border-[var(--luma-gold)]/60 overflow-hidden shadow-glow-gold"
-            style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-          >
-            <img
-              src={card.imagePath}
-              alt={card.nameFa}
-              className={'w-full h-full object-cover ' + (daily.isReversed ? 'rotate-180' : '')}
-            />
-          </div>
+    <Card variant="gold-border" padding="md" className="overflow-hidden">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[var(--luma-gold)]" />
+          <h2 className="font-heading text-base text-[var(--luma-text)]">کارت روزانه اختصاصی شما</h2>
         </div>
+        <span className="flex items-center gap-1 text-[10px] text-[var(--luma-text-muted)]">
+          <Clock className="w-3 h-3 text-[var(--luma-gold)]" />
+          به‌روزرسانی هر ۲۴ ساعت
+        </span>
       </div>
 
-      {!revealed ? (
-        <>
-          <p className="text-sm text-[var(--luma-text-muted)] mb-3">
-            کارت امروز شما آماده است
+      <div className="flex flex-col items-center">
+        <div
+          onClick={handleReveal}
+          className="w-40 h-64 cursor-pointer relative my-2"
+          style={{ perspective: '1000px' }}
+        >
+          <motion.div
+            animate={{ rotateY: isRevealed ? 180 : 0 }}
+            transition={{ duration: 0.65, type: 'spring', stiffness: 220, damping: 20 }}
+            style={{ transformStyle: 'preserve-3d' }}
+            className="w-full h-full relative"
+          >
+            {/* پشت کارت */}
+            <div
+              style={{ backfaceVisibility: 'hidden' }}
+              className="absolute inset-0 rounded-xl overflow-hidden border-2 border-[var(--luma-gold)]/50 shadow-lg"
+            >
+              <img src={backImg} alt="پشت کارت" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-3">
+                <span className="text-[11px] px-2.5 py-1 rounded-full bg-black/70 text-[var(--luma-gold)] border border-[var(--luma-gold)]/40">
+                  لمس برای مشاهده کارت امروز
+                </span>
+              </div>
+            </div>
+
+            {/* روی کارت */}
+            <div
+              style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+              className="absolute inset-0 rounded-xl overflow-hidden border-2 border-[var(--luma-gold)] shadow-xl bg-[var(--luma-bg-elevated)]"
+            >
+              <img
+                src={frontImg}
+                alt={dailyCard.nameFa}
+                className={'w-full h-full object-cover ' + (isReversed ? 'rotate-180' : '')}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = backImg;
+                }}
+              />
+            </div>
+          </motion.div>
+        </div>
+
+        {isRevealed ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full mt-3 pt-3 border-t border-[var(--luma-border)] text-right space-y-2"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading text-base text-[var(--luma-gold)]">{dailyCard.nameFa}</h3>
+              {isReversed && (
+                <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
+                  <RotateCcw className="w-3 h-3" />
+                  معکوس
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-[var(--luma-text)] leading-relaxed text-justify">
+              {isReversed ? dailyCard.reversed.meaning : dailyCard.upright.meaning}
+            </p>
+            <div className="flex flex-wrap gap-1 pt-1">
+              {dailyCard.keywords.map((kw, i) => (
+                <span
+                  key={i}
+                  className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]"
+                >
+                  {kw}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        ) : (
+          <p className="text-xs text-[var(--luma-text-muted)] mt-2 text-center">
+            کارت امروز بر اساس انرژی پروفایل شما آماده شده است. روی کارت ضربه بزنید.
           </p>
-          <Button variant="gold" onClick={() => setRevealed(true)}>
-            <Sparkles className="w-4 h-4" />
-            نمایش کارت
-          </Button>
-        </>
-      ) : (
-        <>
-          <h4 className="font-heading text-base text-[var(--luma-text)] mb-1">
-            {card.nameFa}
-            {daily.isReversed && <span className="text-xs text-amber-500 mr-1"> (معکوس)</span>}
-          </h4>
-          <p className="text-xs text-[var(--luma-text-muted)] leading-relaxed mb-3 px-2">
-            {meaning}
-          </p>
-          <div className="flex flex-wrap gap-1 justify-center mb-3">
-            {keywords.slice(0, 3).map((kw, i) => (
-              <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]">
-                {kw}
-              </span>
-            ))}
-          </div>
-          <Button variant="secondary" size="sm" onClick={onNavigateToTarot}>
-            <RefreshCw className="w-3 h-3" />
-            فال کامل
-          </Button>
-        </>
-      )}
+        )}
+      </div>
     </Card>
   );
 }
