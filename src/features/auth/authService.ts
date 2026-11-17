@@ -125,7 +125,6 @@ export async function signUp(data: SignUpData & { phone?: string }): Promise<Aut
   const rawPhone = normalizedPhone || (data.phone ? normalizeIranPhone(data.phone).local : '');
   const cleanUsername = data.username.trim() || rawPhone || rawIdentifier;
 
-  // ۱. اولویت اول: ثبت و همگام‌سازی از طریق auth-service.php سایت لومِرا
   if (rawPhone) {
     try {
       const res = await fetch('https://lumeraworld.ir/auth-service.php', {
@@ -147,7 +146,6 @@ export async function signUp(data: SignUpData & { phone?: string }): Promise<Aut
     }
   }
 
-  // ۲. ثبت در Supabase Auth
   const { data: result, error } = await supabase.auth.signUp({
     email: authEmail,
     password: data.password,
@@ -173,7 +171,6 @@ export async function signIn(data: SignInData): Promise<AuthUser> {
   const { isPhone, normalizedPhone, rawIdentifier } = resolveAuthIdentifier(data.email);
   const loginIdentifier = isPhone && normalizedPhone ? normalizedPhone : rawIdentifier;
 
-  // ۱. ورود مستقیم از طریق auth-service.php سایت لومِرا (پشتیبانی از شماره موبایل، نام کاربری و رمز سایت)
   try {
     const res = await fetch('https://lumeraworld.ir/auth-service.php', {
       method: 'POST',
@@ -192,7 +189,6 @@ export async function signIn(data: SignInData): Promise<AuthUser> {
     console.warn('auth-service.php login fallback:', err);
   }
 
-  // ۲. تلاش دوم با Supabase Auth (برای اکانت‌های ایمیلی یا پسوندهای @lumeraworld.ir و @luma.ir)
   const candidateEmails = isPhone && normalizedPhone
     ? [
         `${normalizedPhone}@lumeraworld.ir`,
@@ -235,7 +231,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 }
 
 export async function sendOtp(emailOrPhone: string, username?: string): Promise<void> {
-  const { isPhone, normalizedPhone } = resolveAuthIdentifier(emailOrPhone);
+  const { isPhone, normalizedPhone, authEmail } = resolveAuthIdentifier(emailOrPhone);
   if (isPhone && normalizedPhone) {
     await dispatchSmsOtp(normalizedPhone, 'login');
     return;
@@ -254,7 +250,7 @@ export async function sendOtp(emailOrPhone: string, username?: string): Promise<
 }
 
 export async function verifyOtp(emailOrPhone: string, token: string): Promise<AuthUser> {
-  const { isPhone, normalizedPhone } = resolveAuthIdentifier(emailOrPhone);
+  const { isPhone, normalizedPhone, authEmail } = resolveAuthIdentifier(emailOrPhone);
 
   if (isPhone && normalizedPhone) {
     const isValid = await verifySmsOtpCode(normalizedPhone, token, 'login');
@@ -262,7 +258,6 @@ export async function verifyOtp(emailOrPhone: string, token: string): Promise<Au
       throw new AuthError('auth_err_invalid_otp', 'کد پیامکی واردشده نامعتبر است یا منقضی شده است.');
     }
 
-    // همگام‌سازی و دریافت پروفایل واقعی کاربر از auth-service.php سایت لومِرا
     const res = await fetch('https://lumeraworld.ir/auth-service.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -471,4 +466,3 @@ function translateAuthError(message: string): { key: string; fallback: string } 
   };
   return map[message] || { key: 'auth_err_unknown', fallback: message };
 }
-
