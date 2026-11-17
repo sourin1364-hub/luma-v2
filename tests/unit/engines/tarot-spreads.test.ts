@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { SPREADS, getSpreadById, getAllSpreads } from '@/engines/tarot';
 
 describe('Tarot spreads', () => {
-  it('has 6 spreads', () => {
-    expect(SPREADS).toHaveLength(6);
+  it('has 13 spreads', () => {
+    expect(SPREADS).toHaveLength(13);
   });
 
   it('all spreads have unique ids', () => {
     const ids = SPREADS.map(s => s.id);
-    expect(new Set(ids).size).toBe(6);
+    expect(new Set(ids).size).toBe(SPREADS.length);
   });
 
   it('every spread has correct number of positions matching cardCount', () => {
@@ -42,6 +42,6 @@ describe('Tarot spreads', () => {
   it('getAllSpreads returns a copy', () => {
     const copy = getAllSpreads();
     copy.push(copy[0]);
-    expect(SPREADS).toHaveLength(6);
+    expect(SPREADS).toHaveLength(13);
   });
 });

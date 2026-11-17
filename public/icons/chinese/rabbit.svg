@@ -1,0 +1,28 @@
+<svg width="200" height="200" viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#1E1B4B"/>
+          <stop offset="100%" stop-color="#090D16"/>
+        </radialGradient>
+        <linearGradient id="goldFill" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FEF08A"/>
+          <stop offset="50%" stop-color="#D4AF37"/>
+          <stop offset="100%" stop-color="#B45309"/>
+        </linearGradient>
+      </defs>
+      <circle cx="46" cy="46" r="43" fill="url(#bgGrad)" stroke="url(#goldFill)" stroke-width="3"/>
+      <circle cx="46" cy="46" r="38" fill="none" stroke="#D4AF37" stroke-opacity="0.35" stroke-width="1.2" stroke-dasharray="4 3"/>
+      
+      <ellipse cx="38" cy="24" rx="5.5" ry="15" transform="rotate(-10 38 24)" fill="url(#goldFill)"/>
+      <ellipse cx="54" cy="24" rx="5.5" ry="15" transform="rotate(10 54 24)" fill="url(#goldFill)"/>
+      <ellipse cx="38" cy="24" rx="2.5" ry="10" transform="rotate(-10 38 24)" fill="#B45309" opacity="0.6"/>
+      <ellipse cx="54" cy="24" rx="2.5" ry="10" transform="rotate(10 54 24)" fill="#B45309" opacity="0.6"/>
+      <circle cx="46" cy="48" r="16" fill="url(#goldFill)"/>
+      <circle cx="40" cy="44" r="2.3" fill="#0F172A"/>
+      <circle cx="52" cy="44" r="2.3" fill="#0F172A"/>
+      <polygon points="46,50 43,54 49,54" fill="#B45309"/>
+      <path d="M42 57 Q46 60 50 57" fill="none" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/>
+    
+      <rect x="24" y="68" width="44" height="15" rx="7.5" fill="#0F172A" stroke="#D4AF37" stroke-width="1.2"/>
+      <text x="46" y="79" text-anchor="middle" fill="#FEF08A" font-family="Tahoma, sans-serif" font-size="9.5" font-weight="bold">خرگوش</text>
+    </svg>

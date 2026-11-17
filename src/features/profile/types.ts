@@ -17,4 +17,5 @@ export interface ProfileData {
   displayName: string;
   username: string;
   avatarUrl: string | null;
+  avatarPath?: string | null;
 }

@@ -1,5 +1,7 @@
 # LUMA v2 - FULL Project Backup (Complete File Contents)
 
+> **منسوخ و ناقص:** این فایل خروجی کامل سورس نیست و بخش‌های خالی/قدیمی دارد. برای وضعیت فعلی، کارهای انجام‌شده و نقشهٔ ادامه، [`PROJECT_HANDOFF_FA.md`](./PROJECT_HANDOFF_FA.md) را بخوانید و آرشیو [`LUMA_SOURCE_BACKUP_2026-11-11.zip`](./LUMA_SOURCE_BACKUP_2026-11-11.zip) را استفاده کنید. دستور قدیمی `git reset --hard 6127fad` در این سند را اجرا نکنید؛ تغییرهای جدید را حذف می‌کند.
+
 **تاریخ تولید:** 2026-11-03 19:55:01
 **مسیر پروژه:** C:\Users\ROYAL\Desktop\luma-v2
 **مخزن گیت‌هاب:** https://github.com/sourin1364-hub/luma-v2
@@ -61,27 +63,16 @@
 # بخش 13: تاریخچه گیت (۱۵ کامیت آخر)
 
 
-**نکته:** کامیت‌های 5d9e354 و e3a11b8 فایل‌های تاروت را خراب کرده‌اند. اگر پروژه خراب شد، به 6127fad برگردید.
+**یادداشت قدیمی و تأییدنشده:** این فایل در ۲۰۲۶-۱۱-۰۳ تهیه شده و توصیه‌های بازگردانی آن با وضعیت فعلی تطبیق داده نشده‌اند. برای تاریخچهٔ فعلی از `git log` استفاده کنید و پیش از هر بازگردانی، ابتدا از تغییرها نسخهٔ پشتیبان تهیه و diff را بررسی کنید.
 
 ---
 
 # بخش 14: دستورات بازگردانی
 
-## بازگشت به آخرین کامیت سالم
+## ادامهٔ امن کار
 
-`powershell
-cd "C:\Users\ROYAL\Desktop\luma-v2"
-git reset --hard 6127fad
-npm install
-npm run dev
-`powershell
-Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
-Remove-Item -Path ".\node_modules\.vite" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path ".\dev-dist" -Recurse -Force -ErrorAction SilentlyContinue
-npm run dev
-1. F12 → Application → Service Workers → Unregister
-2. Ctrl+Shift+R (رفرش سخت)
+این نسخهٔ قدیمی از بک‌آپ شامل snapshot قابل‌بازیابی Git نیست. از `git reset --hard`، پاک‌کردن فایل‌ها یا متوقف‌کردن همهٔ پردازه‌های Node بر اساس این سند استفاده نکنید. برای وضعیت جدید به [`PROJECT_HANDOFF_FA.md`](./PROJECT_HANDOFF_FA.md) بروید. پیش از هر بازیابی، worktree را بررسی و تغییرهای لازم را به‌صورت جداگانه پشتیبان‌گیری کنید.
 
 ---
 
-**پایان فایل بک‌آپ کامل**
+**پایان خروجی قدیمی و ناقص**

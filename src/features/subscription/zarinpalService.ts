@@ -1,4 +1,6 @@
 ﻿import type { Plan, BillingCycle } from '../../hooks/useSubscription';
+import { supabase } from '../../lib/supabase';
+import { type SiteSettings } from './siteSettingsService';
 
 export interface CycleConfig {
   id: BillingCycle;
@@ -10,45 +12,29 @@ export interface CycleConfig {
 }
 
 export const BILLING_CYCLES: CycleConfig[] = [
-  {
-    id: 'monthly',
-    labelFa: 'یک ماهه',
-    months: 1,
-    days: 30,
-    discountPercent: 0,
-  },
-  {
-    id: 'quarterly',
-    labelFa: 'سه ماهه',
-    months: 3,
-    days: 90,
-    discountPercent: 15,
-    badge: '۱۵٪ تخفیف',
-  },
-  {
-    id: 'semiannual',
-    labelFa: 'شش ماهه',
-    months: 6,
-    days: 180,
-    discountPercent: 25,
-    badge: '۲۵٪ تخفیف',
-  },
-  {
-    id: 'annual',
-    labelFa: 'سالیانه',
-    months: 12,
-    days: 365,
-    discountPercent: 40,
-    badge: '۴۰٪، به‌صرفه‌ترین',
-  },
+  { id: 'monthly', labelFa: 'یک ماهه', months: 1, days: 30, discountPercent: 0 },
+  { id: 'quarterly', labelFa: 'سه ماهه', months: 3, days: 90, discountPercent: 15, badge: '۱۵٪ تخفیف' },
+  { id: 'semiannual', labelFa: 'شش ماهه', months: 6, days: 180, discountPercent: 25, badge: '۲۵٪ تخفیف' },
+  { id: 'annual', labelFa: 'سالیانه', months: 12, days: 365, discountPercent: 40, badge: '۴۰٪، به‌صرفه‌ترین' },
 ];
 
-export const BASE_MONTHLY_PRICES: Record<Exclude<Plan, 'free'>, number> = {
-  premium: 99000, // ۹۹,۰۰۰ تومان در ماه
-  pro: 199000,    // ۱۹۹,۰۰۰ تومان در ماه
+export const RAW_BASE_MONTHLY_PRICES: Record<Exclude<Plan, 'free'>, number> = {
+  premium: 199000,
+  pro: 299000,
 };
 
-// درصد تخفیف وفاداری اضافه برای تمدید اشتراک فعال
+export function getGlobalPriceIncreasePercent(): number {
+  return Number(import.meta.env.VITE_GLOBAL_PRICE_INCREASE_PERCENT ?? 0);
+}
+
+export function getBaseMonthlyPrices(): Record<Exclude<Plan, 'free'>, number> {
+  const p = getGlobalPriceIncreasePercent();
+  return {
+    premium: Math.round((RAW_BASE_MONTHLY_PRICES.premium * (1 + p / 100)) / 1000) * 1000,
+    pro: Math.round((RAW_BASE_MONTHLY_PRICES.pro * (1 + p / 100)) / 1000) * 1000,
+  };
+}
+
 export const RENEWAL_EXTRA_DISCOUNT_PERCENT = 10;
 
 export interface PriceCalculation {
@@ -65,23 +51,39 @@ export interface PriceCalculation {
 export function calculateSubscriptionPrice(
   plan: Exclude<Plan, 'free'>,
   cycleId: BillingCycle,
-  isRenewal: boolean
+  isRenewal: boolean,
+  settings?: SiteSettings
 ): PriceCalculation {
   const cycle = BILLING_CYCLES.find((c) => c.id === cycleId) || BILLING_CYCLES[0];
-  const baseMonthly = BASE_MONTHLY_PRICES[plan];
+  const p = getGlobalPriceIncreasePercent();
+  const baseSource = settings
+    ? { premium: settings.monthly_premium, pro: settings.monthly_pro }
+    : RAW_BASE_MONTHLY_PRICES;
+
+  const baseMonthly = Math.round((baseSource[plan] * (1 + p / 100)) / 1000) * 1000;
   const baseTotalToman = baseMonthly * cycle.months;
 
-  const cycleDiscount = cycle.discountPercent;
-  const renewalDiscount = isRenewal ? RENEWAL_EXTRA_DISCOUNT_PERCENT : 0;
+  const cycleDiscount =
+    settings && cycle.id === 'quarterly'
+      ? settings.discount_quarterly
+      : settings && cycle.id === 'semiannual'
+        ? settings.discount_semiannual
+        : settings && cycle.id === 'annual'
+          ? settings.discount_annual
+          : cycle.discountPercent;
 
-  // اعمال تخفیف دوره و سپس تخفیف وفاداری تمدید، گرد شده به هزار تومان
+  const renewalDiscount = isRenewal
+    ? (settings ? settings.renewal_discount : RENEWAL_EXTRA_DISCOUNT_PERCENT)
+    : 0;
+
   const afterCycle = baseTotalToman * (1 - cycleDiscount / 100);
   const afterRenewal = afterCycle * (1 - renewalDiscount / 100);
   const finalPayableToman = Math.round(afterRenewal / 1000) * 1000;
 
   const monthlyEquivalentToman = Math.round(finalPayableToman / cycle.months / 1000) * 1000;
   const savedAmountToman = baseTotalToman - finalPayableToman;
-  const totalDiscountPercent = Math.round((savedAmountToman / baseTotalToman) * 100);
+  const totalDiscountPercent =
+    baseTotalToman > 0 ? Math.round((savedAmountToman / baseTotalToman) * 100) : 0;
 
   return {
     baseTotalToman,
@@ -106,62 +108,79 @@ export interface ZarinpalRequestResult {
   message: string;
 }
 
-/**
- * ارسال درخواست پرداخت به درگاه زرین‌پال
- * در صورتی که VITE_ZARINPAL_MERCHANT_ID در محیط تنظیم شده باشد به درگاه متصل می‌شود.
- */
 export async function initiateZarinpalPayment(params: {
-  userId: string;
-  userEmail?: string;
   plan: Exclude<Plan, 'free'>;
   cycle: BillingCycle;
-  amountToman: number;
+  expectedAmountToman: number;
 }): Promise<ZarinpalRequestResult> {
-  const merchantId = import.meta.env.VITE_ZARINPAL_MERCHANT_ID;
+  const { data: authData } = await supabase.auth.getUser();
+  const userId = authData?.user?.id;
 
-  if (!merchantId || merchantId.length < 32) {
+  if (!userId) {
+    throw new Error('لطفاً ابتدا وارد حساب کاربری خود شوید.');
+  }
+
+  const cycleObj = BILLING_CYCLES.find((c) => c.id === params.cycle) || BILLING_CYCLES[0];
+
+  const response = await fetch('https://lumeraworld.ir/payment.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      userId: userId,
+      plan: params.plan,
+      tier: params.plan,
+      cycle: params.cycle,
+      months: cycleObj.months,
+      days: cycleObj.days,
+      amount: params.expectedAmountToman,
+      expectedAmountToman: params.expectedAmountToman,
+      return_url: window.location.origin + window.location.pathname,
+    }),
+  });
+
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok || !result) {
+    throw new Error(result?.message || 'درخواست پرداخت به درگاه لومِرا انجام نشد.');
+  }
+
+  const paymentUrl =
+    result.paymentUrl ||
+    result.payment_url ||
+    result.url ||
+    (result.trackId ? `https://gateway.zibal.ir/start/${result.trackId}` : undefined);
+
+  if ((result.success || result.ready || paymentUrl) && paymentUrl) {
     return {
-      ready: false,
-      message:
-        'درگاه پرداخت زرین‌پال در حال اتصال نهایی و دریافت کد پذیرنده (Merchant ID) است. به‌زودی پرداخت آنلاین فعال خواهد شد.',
+      ready: true,
+      paymentUrl,
+      authority: String(result.trackId || result.authority || ''),
+      message: result.message || 'در حال انتقال به درگاه پرداخت...',
     };
   }
 
-  try {
-    const callbackUrl = `${window.location.origin}${import.meta.env.BASE_URL}?payment_verify=1&plan=${params.plan}&cycle=${params.cycle}`;
-    const response = await fetch('https://api.zarinpal.com/pg/v4/payment/request.json', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        merchant_id: merchantId,
-        amount: params.amountToman * 10, // تبدیل تومان به ریال برای زرین‌پال
-        callback_url: callbackUrl,
-        description: `خرید اشتراک ${params.plan === 'pro' ? 'حرفه‌ای' : 'پریمیوم'} LUMA (${params.cycle})`,
-        metadata: {
-          email: params.userEmail || '',
-        },
-      }),
-    });
+  return {
+    ready: false,
+    message: result.message || 'خطا در ایجاد تراکنش درگاه پرداخت.',
+  };
+}
 
-    const json = await response.json();
-    if (json?.data?.code === 100 && json?.data?.authority) {
-      const authority = json.data.authority;
-      return {
-        ready: true,
-        authority,
-        paymentUrl: `https://www.zarinpal.com/pg/StartPay/${authority}`,
-        message: 'در حال انتقال به درگاه امن زرین‌پال...',
-      };
-    }
-
-    return {
-      ready: false,
-      message: 'خطا در برقراری ارتباط با درگاه زرین‌پال. لطفاً دقایقی دیگر تلاش کنید.',
-    };
-  } catch (err) {
-    return {
-      ready: false,
-      message: 'ارتباط با سرور درگاه زرین‌پال برقرار نشد. وضعیت اتصال اینترنت را بررسی کنید.',
-    };
+export async function verifyZarinpalPayment(
+  authority: string,
+  status: string
+): Promise<{ success: boolean; message: string }> {
+  if (status === '1' || status === '2' || status?.toUpperCase() === 'OK' || status === 'success') {
+    return { success: true, message: 'پرداخت با موفقیت انجام و اشتراک شما فعال شد.' };
   }
+  const { data, error } = await supabase.functions.invoke<{ success: boolean; message: string }>(
+    'zarinpal-payment',
+    { body: { action: 'verify', authority, status } }
+  );
+  if (error || !data) {
+    return { success: false, message: 'تأیید پرداخت انجام نشد.' };
+  }
+  return data;
 }

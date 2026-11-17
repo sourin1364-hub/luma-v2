@@ -12,6 +12,22 @@ export interface AdminUser {
 }
 
 /**
+ * کلاس خطای سفارشی برای ماژول ادمین
+ * این کلاس یک کلید ترجمه (key) را نگه می‌دارد تا UI آن را ترجمه کند.
+ */
+export class AdminError extends Error {
+  public key: string;
+  public originalError?: any;
+
+  constructor(key: string, originalError?: any) {
+    super(key);
+    this.name = 'AdminError';
+    this.key = key;
+    this.originalError = originalError;
+  }
+}
+
+/**
  * دریافت لیست همه کاربران (فقط برای ادمین)
  */
 export async function getAllUsers(): Promise<AdminUser[]> {
@@ -44,7 +60,10 @@ export async function updateUserRole(userId: string, role: 'user' | 'admin'): Pr
     .from('profiles')
     .update({ role })
     .eq('id', userId);
-  if (error) throw new Error('خطا در تغییر نقش: ' + error.message);
+    
+  if (error) {
+    throw new AdminError('admin_err_role_update', error.message);
+  }
 }
 
 /**
@@ -55,13 +74,21 @@ export async function updateUserPlan(
   plan: Plan,
   subscriptionUntil: string | null
 ): Promise<void> {
+  const tier = plan === 'free' ? 'basic' : plan;
   const { error } = await supabase
     .from('profiles')
-    .update({ plan, subscription_until: subscriptionUntil })
+    .update({
+      plan,
+      subscription_until: subscriptionUntil,
+      tier,
+      subscription_expires_at: subscriptionUntil,
+    })
     .eq('id', userId);
-  if (error) throw new Error('خطا در تغییر پلن: ' + error.message);
-}
 
+  if (error) {
+    throw new AdminError('admin_err_plan_update', error.message);
+  }
+}
 /**
  * فعال‌سازی دستی اشتراک (مثلاً برای هدیه یا تست)
  */

@@ -2,6 +2,15 @@ import { supabase } from '../../lib/supabase';
 import type { ReadingResult, ReadingInterpretation } from '../../engines/tarot';
 import { getCardById, getSpreadById } from '../../engines/tarot';
 
+export class TarotError extends Error {
+  public readonly key: string;
+  constructor(key: string, originalMessage?: string) {
+    super(originalMessage || key);
+    this.name = 'TarotError';
+    this.key = key;
+  }
+}
+
 export interface SavedReading {
   id: string;
   spreadId: string;
@@ -27,7 +36,7 @@ export async function saveReading(
     const card = getCardById(d.cardId);
     return {
       cardId: d.cardId,
-      name: card?.nameFa || '',
+      name: card?.nameFa || '', // ذخیره نام پایه در دیتابیس برای جلوگیری از ناهماهنگی
       isReversed: d.isReversed,
       positionIndex: d.positionIndex,
     };
@@ -46,7 +55,9 @@ export async function saveReading(
     .select('id')
     .single();
 
-  if (error) throw new Error('خطا در ذخیره فال: ' + error.message);
+  if (error) {
+    throw new TarotError('tarot_err_save', error.message);
+  }
   return data.id;
 }
 
@@ -79,5 +90,7 @@ export async function getReadings(userId: string): Promise<SavedReading[]> {
 
 export async function deleteReading(readingId: string): Promise<void> {
   const { error } = await supabase.from('tarot_readings').delete().eq('id', readingId);
-  if (error) throw new Error('خطا در حذف فال: ' + error.message);
+  if (error) {
+    throw new TarotError('tarot_err_delete', error.message);
+  }
 }

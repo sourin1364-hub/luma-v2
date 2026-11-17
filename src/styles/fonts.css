@@ -10,6 +10,7 @@
   font-display: swap;
   src: url('/fonts/vazirmatn/Vazirmatn-Light.woff2') format('woff2');
 }
+
 @font-face {
   font-family: 'Vazirmatn';
   font-style: normal;
@@ -17,6 +18,7 @@
   font-display: swap;
   src: url('/fonts/vazirmatn/Vazirmatn-Regular.woff2') format('woff2');
 }
+
 @font-face {
   font-family: 'Vazirmatn';
   font-style: normal;
@@ -24,6 +26,7 @@
   font-display: swap;
   src: url('/fonts/vazirmatn/Vazirmatn-Medium.woff2') format('woff2');
 }
+
 @font-face {
   font-family: 'Vazirmatn';
   font-style: normal;
@@ -31,6 +34,7 @@
   font-display: swap;
   src: url('/fonts/vazirmatn/Vazirmatn-SemiBold.woff2') format('woff2');
 }
+
 @font-face {
   font-family: 'Vazirmatn';
   font-style: normal;
@@ -38,6 +42,7 @@
   font-display: swap;
   src: url('/fonts/vazirmatn/Vazirmatn-Bold.woff2') format('woff2');
 }
+
 @font-face {
   font-family: 'Vazirmatn';
   font-style: normal;
@@ -54,6 +59,7 @@
   font-display: swap;
   src: url('/fonts/cormorant/CormorantGaramond-Regular.woff2') format('woff2');
 }
+
 @font-face {
   font-family: 'Cormorant Garamond';
   font-style: normal;
@@ -61,10 +67,29 @@
   font-display: swap;
   src: url('/fonts/cormorant/CormorantGaramond-Medium.woff2') format('woff2');
 }
+
 @font-face {
   font-family: 'Cormorant Garamond';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
   src: url('/fonts/cormorant/CormorantGaramond-Bold.woff2') format('woff2');
+}
+
+/* BTitrBold (Persian Heading / Posters) */
+@font-face {
+  font-family: 'BTitrBold';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/BTitrBold/BTitrBold.woff2') format('woff2');
+}
+
+/* Majallat Bidayat (Display / Mystic) */
+@font-face {
+  font-family: 'Majallat';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Majallat/Majallat.woff2') format('woff2');
 }

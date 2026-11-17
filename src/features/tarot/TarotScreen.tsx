@@ -8,6 +8,7 @@ import { TarotResultScreen } from './TarotResultScreen';
 import { TarotHistoryScreen } from './TarotHistoryScreen';
 import { TarotLibraryModal } from './TarotLibraryModal';
 import { SubscriptionScreen } from '../subscription/SubscriptionScreen';
+import { SubscriptionStatusNotice } from '../subscription/SubscriptionBadge';
 import { saveReading } from './tarotHistoryService';
 import { ALL_TAROT_CARDS, getSpreadById, TAROT_ENGINE_VERSION } from '../../engines/tarot';
 import { synthesizeReading } from '../../engines/tarot/interpretation/engine';
@@ -16,6 +17,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useSubscription } from '../../hooks/useSubscription';
 import { playCardSelectSound, playCardFlipSound, playDeckShuffleSound } from '../../utils/audio';
 import { History, Sparkles, RotateCcw, Settings2, BookOpen } from 'lucide-react';
+import { useLanguageStore, UI_TRANSLATIONS, translateNodeText } from '../../i18n/useLanguageStore';
 
 type TarotStep = 'select-spread' | 'draw-cards' | 'result' | 'history' | 'library' | 'subscription';
 
@@ -29,6 +31,9 @@ function shuffleDeck(cards: TarotCard[]): TarotCard[] {
 }
 
 export function TarotScreen() {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
+
   const user = useAuthStore((s) => s.user);
   const subscription = useSubscription();
 
@@ -81,7 +86,7 @@ export function TarotScreen() {
 
       const result: ReadingResult = {
         spreadId: selectedSpread.id,
-        question: question.trim() || selectedSpread.nameFa,
+        question: question.trim() || translateNodeText(selectedSpread.nameFa, lang),
         drawnCards,
         createdAt: new Date().toISOString(),
         version: TAROT_ENGINE_VERSION || '1.0.0',
@@ -156,21 +161,21 @@ export function TarotScreen() {
     return (
       <div className="space-y-4 pb-24">
         <PageHeader
-          title={selectedSpread.nameFa}
-          subtitle={selectedSpread.description}
+          title={translateNodeText(selectedSpread.nameFa, lang)}
+          subtitle={translateNodeText(selectedSpread.description, lang)}
           onBack={() => setStep('select-spread')}
         />
 
         <Card variant="elevated" padding="md" className="space-y-3">
           <div>
             <label className="block text-xs text-[var(--luma-text-muted)] mb-1.5">
-              نیت یا پرسش شما (اختیاری):
+              {t['tarot_ui_intention_label']}
             </label>
             <input
               type="text"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="نیت کنید یا سوال خود را بنویسید..."
+              placeholder={t['tarot_ui_intention_ph']}
               className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] text-xs"
             />
           </div>
@@ -178,7 +183,7 @@ export function TarotScreen() {
           <div className="flex items-center justify-between pt-2 border-t border-[var(--luma-border)]">
             <div className="flex items-center gap-1.5 text-xs text-[var(--luma-text-muted)]">
               <Settings2 className="w-3.5 h-3.5 text-[var(--luma-gold)]" />
-              <span>احتمال کارت معکوس (۳۰٪)</span>
+              <span>{t['tarot_ui_reversed_chance']}</span>
             </div>
             <button
               type="button"
@@ -190,7 +195,7 @@ export function TarotScreen() {
                   : 'bg-[var(--luma-bg-subtle)] text-[var(--luma-text-muted)] border border-[var(--luma-border)]')
               }
             >
-              {allowReversed ? 'فعال' : 'غیرفعال'}
+              {allowReversed ? t['tarot_ui_active'] : t['tarot_ui_inactive']}
             </button>
           </div>
         </Card>
@@ -200,11 +205,11 @@ export function TarotScreen() {
             <p className="text-xs font-bold text-[var(--luma-gold)] flex items-center justify-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               <span>
-                کارت {selectedCardIds.length + 1}: {currentPosition.nameFa}
+                {t['tarot_ui_card_n']} {selectedCardIds.length + 1}: {translateNodeText(currentPosition.nameFa, lang)}
               </span>
             </p>
             <p className="text-[11px] text-[var(--luma-text-muted)] mt-1">
-              {currentPosition.description}
+              {translateNodeText(currentPosition.description, lang)}
             </p>
           </Card>
         )}
@@ -212,7 +217,7 @@ export function TarotScreen() {
         <div className="flex justify-end">
           <Button variant="secondary" size="sm" onClick={handleReshuffle}>
             <RotateCcw className="w-3.5 h-3.5" />
-            بر زدن مجدد کارت‌ها
+            {t['tarot_ui_reshuffle']}
           </Button>
         </div>
 
@@ -231,16 +236,17 @@ export function TarotScreen() {
 
   return (
     <div className="space-y-5 pb-24">
+      <SubscriptionStatusNotice error={subscription.error} />
       <div className="flex items-center justify-between gap-2">
-        <PageHeader title="تاروت" subtitle="۱۳ چیدمان تخصصی و کتابخانه ۷۸ کارت" />
+        <PageHeader title={t['tarot_ui_title']} subtitle={t['tarot_ui_subtitle']} />
         <div className="flex items-center gap-1.5">
           <Button variant="secondary" size="sm" onClick={() => setStep('library')}>
             <BookOpen className="w-3.5 h-3.5" />
-            کتابخانه
+            {t['tarot_ui_library']}
           </Button>
           <Button variant="secondary" size="sm" onClick={() => setStep('history')}>
             <History className="w-3.5 h-3.5" />
-            تاریخچه
+            {t['tarot_ui_history']}
           </Button>
         </div>
       </div>
@@ -252,4 +258,3 @@ export function TarotScreen() {
     </div>
   );
 }
-

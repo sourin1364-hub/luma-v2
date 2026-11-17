@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { interpretReading, performReading, getSpreadById } from '@/engines/tarot';
+import { synthesizeReading } from '@/engines/tarot/interpretation/engine';
 
 describe('Tarot interpretation', () => {
   it('produces valid interpretation for single-card reading', () => {
@@ -49,6 +50,35 @@ describe('Tarot interpretation', () => {
       expect(interp.summary).toBeTruthy();
       expect(interp.cards).toHaveLength(spread.cardCount);
     });
+  });
+
+  it('keeps Arabic and Kurdish tarot synthesis in the selected language', () => {
+    const reading = performReading(getSpreadById('daily-card')!, 'test');
+
+    for (const language of ['ar', 'ckb'] as const) {
+      const synthesis = synthesizeReading(reading, language);
+      const text = [
+        synthesis.narrative,
+        synthesis.advice,
+        ...synthesis.cards.map((card) => card.positionSpecificMeaning),
+        ...synthesis.warnings,
+        ...synthesis.affirmations,
+      ].join(' ');
+
+      expect(text).not.toMatch(/\b(?:This reading|Core Guidance|In the sphere|Reversed:|Upright:|I stand aligned)\b/i);
+    }
+  });
+
+  it('does not include Arabic-script fallback text in English synthesis', () => {
+    const reading = performReading(getSpreadById('daily-card')!, 'test');
+    const synthesis = synthesizeReading(reading, 'en');
+    const text = [
+      synthesis.narrative,
+      synthesis.advice,
+      ...synthesis.cards.map((card) => card.positionSpecificMeaning),
+    ].join(' ');
+
+    expect(text).not.toMatch(/[\u0600-\u06FF]/);
   });
 
   it('throws on invalid spread id', () => {

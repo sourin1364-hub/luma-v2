@@ -7,3 +7,20 @@ dist
 coverage
 playwright-report
 test-results
+
+# Temp & Backup Files
+*.zip
+_project-scan.txt
+luma-scan-full.txt
+luma_map.txt
+project_tree.txt
+step1_context.txt
+step2_pricing_files.txt
+tsconfig.tsbuildinfo
+.env.*
+!.env.example
+*.pem
+*.key
+*secret*
+payment.php
+verify.php

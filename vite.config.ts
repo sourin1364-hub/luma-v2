@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      devOptions: { enabled: false },
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/*.svg', 'icons/*.png'],
       manifest: false,
@@ -16,12 +17,18 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/api/, /^\/supabase/]
+        navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
       },
-      devOptions: {
-        enabled: false
-      }
-    })
+    }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/node_modules/three/')) return 'three-vendor'
+        },
+      },
+    },
+  },
   resolve: { alias: { '@': path.resolve(__dirname, './src') } }
 })

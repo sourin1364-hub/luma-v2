@@ -14,6 +14,7 @@ export interface SubscriptionState {
   expiresAt: string | null;
   daysRemaining: number;
   isLoading: boolean;
+  error: string | null;
 }
 
 // چیدمان‌های نیازمند حداقل پلن پریمیوم (شامل هفتگی، ماهانه، عشق، شغل، نعل اسب)
@@ -32,28 +33,44 @@ export function useSubscription() {
     expiresAt: null,
     daysRemaining: 0,
     isLoading: true,
+    error: null,
   });
 
   const refreshSubscription = useCallback(async () => {
     if (!user) {
-      setState((s) => ({ ...s, isLoading: false }));
+      setState({
+        plan: 'free',
+        isAdmin: false,
+        isActive: false,
+        isPremium: false,
+        isPro: false,
+        expiresAt: null,
+        daysRemaining: 0,
+        isLoading: false,
+        error: null,
+      });
       return;
     }
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('role, plan, subscription_until')
+        .select('*')
         .eq('id', user.id)
         .maybeSingle();
 
       if (error || !data) {
-        setState((s) => ({ ...s, isLoading: false }));
+        if (error) console.error('Subscription profile lookup failed:', error);
+        setState((s) => ({
+          ...s,
+          isLoading: false,
+          error: 'subscription_load_failed',
+        }));
         return;
       }
 
-      const rawPlan: Plan = (data.plan as Plan) || 'free';
+      const rawPlan: Plan = ((data.plan && data.plan !== 'free' ? data.plan : data.tier) as Plan) || 'free';
       const role = data.role || 'user';
-      const expiresAt = data.subscription_until || null;
+      const expiresAt = data.subscription_until || data.subscription_expires_at || null;
       const isAdmin = role === 'admin';
 
       const now = new Date();
@@ -76,19 +93,29 @@ export function useSubscription() {
         expiresAt,
         daysRemaining,
         isLoading: false,
+        error: null,
       });
     } catch (e) {
       console.error('Subscription check error:', e);
-      setState((s) => ({ ...s, isLoading: false }));
+      setState((s) => ({
+        ...s,
+        isLoading: false,
+        error: 'subscription_load_failed',
+      }));
     }
   }, [user]);
 
   useEffect(() => {
     refreshSubscription();
+    window.addEventListener('luma:subscription-updated', refreshSubscription);
+    return () => window.removeEventListener('luma:subscription-updated', refreshSubscription);
   }, [refreshSubscription]);
 
   const canUseSpread = (spreadId: string): boolean => {
     if (state.isAdmin) return true;
+    if (state.isLoading || state.error) {
+      return !PRO_SPREADS.includes(spreadId) && !PREMIUM_SPREADS.includes(spreadId);
+    }
     if (PRO_SPREADS.includes(spreadId)) {
       return state.isPro;
     }
@@ -109,9 +136,10 @@ export function useSubscription() {
     refreshSubscription,
     canUseSpread,
     getRequiredPlanForSpread,
-    canUseSynthesis: () => state.isAdmin || state.isPremium,
-    canUseSynastry: () => state.isAdmin || state.isPremium,
-    canUseAdvancedNumerology: () => state.isAdmin || state.isPremium,
-    canUseYearlyForecast: () => state.isAdmin || state.isPro,
+    canUseSynthesis: () => !state.isLoading && !state.error && (state.isAdmin || state.isPremium),
+    canUseSynastry: () => !state.isLoading && !state.error && (state.isAdmin || state.isPremium),
+    canUseAdvancedNumerology: () => !state.isLoading && !state.error && (state.isAdmin || state.isPremium),
+    canUseYearlyForecast: () => !state.isLoading && !state.error && (state.isAdmin || state.isPro),
   };
 }
+

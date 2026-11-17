@@ -22,6 +22,11 @@ describe('getChineseYear', () => {
   it('on new year day → same year', () => {
     expect(getChineseYear(2024, 2, 10)).toBe(2024);
   });
+
+  it('uses the lunar new year date when it falls before February 4', () => {
+    expect(getChineseYear(1990, 1, 26)).toBe(1989);
+    expect(getChineseYear(1990, 1, 27)).toBe(1990);
+  });
 });
 
 describe('getAnimal', () => {

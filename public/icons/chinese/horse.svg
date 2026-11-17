@@ -1,0 +1,22 @@
+<svg width="200" height="200" viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#1E1B4B"/>
+          <stop offset="100%" stop-color="#090D16"/>
+        </radialGradient>
+        <linearGradient id="goldFill" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FEF08A"/>
+          <stop offset="50%" stop-color="#D4AF37"/>
+          <stop offset="100%" stop-color="#B45309"/>
+        </linearGradient>
+      </defs>
+      <circle cx="46" cy="46" r="43" fill="url(#bgGrad)" stroke="url(#goldFill)" stroke-width="3"/>
+      <circle cx="46" cy="46" r="38" fill="none" stroke="#D4AF37" stroke-opacity="0.35" stroke-width="1.2" stroke-dasharray="4 3"/>
+      
+      <path d="M32 64 L34 38 L26 34 L34 20 L42 12 L46 20 L58 24 L54 42 L60 64 Z" fill="url(#goldFill)"/>
+      <path d="M42 16 C54 18, 64 28, 62 46" fill="none" stroke="#FEF08A" stroke-width="4" stroke-linecap="round" stroke-dasharray="4 3"/>
+      <circle cx="40" cy="26" r="2.2" fill="#0F172A"/>
+    
+      <rect x="24" y="68" width="44" height="15" rx="7.5" fill="#0F172A" stroke="#D4AF37" stroke-width="1.2"/>
+      <text x="46" y="79" text-anchor="middle" fill="#FEF08A" font-family="Tahoma, sans-serif" font-size="9.5" font-weight="bold">اسب</text>
+    </svg>

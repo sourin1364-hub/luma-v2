@@ -1,37 +1,31 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Loader2, Users, Crown, Shield, Search, Calendar, UserCog } from 'lucide-react';
+import { Loader2, Users, Crown, Shield, Search, Calendar, UserCog, Save, SlidersHorizontal } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
   getAllUsers,
   updateUserRole,
   activateSubscription,
   cancelSubscription,
+  AdminError,
   type AdminUser,
 } from './adminService';
 import type { Plan } from '../../hooks/useSubscription';
+import { useLanguageStore, UI_TRANSLATIONS, type TranslationKey } from '../../i18n/useLanguageStore';
+import type { AppLanguage } from '../../i18n/useLanguageStore';
+import { ResearchArticleAdmin } from '../research/ResearchArticleAdmin';
+import { getSiteSettings, updateSiteSettings, DEFAULT_SITE_SETTINGS, type SiteSettings } from '../subscription/siteSettingsService';
 
 interface AdminScreenProps {
   onBack: () => void;
 }
 
-const PLAN_LABELS: Record<Plan, string> = {
-  free: 'رایگان',
-  premium: 'پریمیوم',
-  pro: 'حرفه‌ای',
-};
-
-const PLAN_COLORS: Record<Plan, string> = {
-  free: 'text-[var(--luma-text-muted)]',
-  premium: 'text-slate-300',
-  pro: 'text-[var(--luma-gold)]',
-};
-
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, lang: AppLanguage): string {
   if (!iso) return '—';
-  return new Intl.DateTimeFormat('fa-IR', {
+  const locale = lang === 'fa' ? 'fa-IR' : lang === 'ar' ? 'ar-SA' : lang === 'ckb' ? 'ckb-IQ' : 'en-US';
+  return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -39,13 +33,19 @@ function formatDate(iso: string | null): string {
 }
 
 export function AdminScreen({ onBack }: AdminScreenProps) {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
   const currentUser = useAuthStore((s) => s.user);
+
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedDays, setSelectedDays] = useState<number>(30);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [pricingForm, setPricingForm] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
+  const [pricingSaving, setPricingSaving] = useState(false);
+  const [pricingMsg, setPricingMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const loadUsers = async () => {
     setIsLoading(true);
@@ -56,35 +56,54 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
 
   useEffect(() => {
     loadUsers();
+    getSiteSettings().then(setPricingForm);
   }, []);
+
+  const handleSavePricing = async () => {
+    setPricingSaving(true);
+    setPricingMsg(null);
+    try {
+      await updateSiteSettings(pricingForm);
+      setPricingMsg({ type: 'success', text: 'تعرفه‌ها و تخفیف‌ها ذخیره شد و هم‌زمان در اپ و وب‌سایت اعمال گردید.' });
+    } catch (err) {
+      setPricingMsg({ type: 'error', text: err instanceof Error ? err.message : 'خطا در ذخیره تعرفه‌ها' });
+    } finally {
+      setPricingSaving(false);
+    }
+  };
 
   const handleActivate = async (userId: string, plan: Plan, days: number) => {
     setActionLoading(userId);
     setMessage(null);
     try {
       await activateSubscription(userId, plan, days);
+      const planName = t[`admin_plan_${plan}` as TranslationKey];
       setMessage({
         type: 'success',
-        text: `اشتراک ${PLAN_LABELS[plan]} به مدت ${days} روز فعال شد`,
+        text: t['admin_msg_activated']
+          .replace('{0}', planName)
+          .replace('{1}', String(days)),
       });
       await loadUsers();
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'خطا' });
+      const errMsg = err instanceof AdminError ? t[err.key as TranslationKey] : (err instanceof Error ? err.message : t['admin_msg_error']);
+      setMessage({ type: 'error', text: errMsg });
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleCancel = async (userId: string) => {
-    if (!confirm('اشتراک این کاربر لغو شود؟')) return;
+    if (!confirm(t['admin_confirm_cancel'])) return;
     setActionLoading(userId);
     setMessage(null);
     try {
       await cancelSubscription(userId);
-      setMessage({ type: 'success', text: 'اشتراک لغو شد' });
+      setMessage({ type: 'success', text: t['admin_msg_canceled'] });
       await loadUsers();
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'خطا' });
+      const errMsg = err instanceof AdminError ? t[err.key as TranslationKey] : (err instanceof Error ? err.message : t['admin_msg_error']);
+      setMessage({ type: 'error', text: errMsg });
     } finally {
       setActionLoading(null);
     }
@@ -92,17 +111,18 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
 
   const handleToggleRole = async (user: AdminUser) => {
     if (user.id === currentUser?.id) {
-      setMessage({ type: 'error', text: 'نمی‌توانید نقش خودتان را تغییر دهید' });
+      setMessage({ type: 'error', text: t['admin_err_self_role'] });
       return;
     }
     const newRole = user.role === 'admin' ? 'user' : 'admin';
     setActionLoading(user.id);
     try {
       await updateUserRole(user.id, newRole);
-      setMessage({ type: 'success', text: 'نقش کاربر تغییر کرد' });
+      setMessage({ type: 'success', text: t['admin_msg_role_changed'] });
       await loadUsers();
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'خطا' });
+      const errMsg = err instanceof AdminError ? t[err.key as TranslationKey] : (err instanceof Error ? err.message : t['admin_msg_error']);
+      setMessage({ type: 'error', text: errMsg });
     } finally {
       setActionLoading(null);
     }
@@ -126,40 +146,124 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
 
   return (
     <div className="space-y-5 pb-24">
-      <PageHeader title="پنل مدیریت" subtitle="مدیریت کاربران و اشتراک‌ها" onBack={onBack} />
+      <PageHeader title={t['admin_title']} subtitle={t['admin_subtitle']} onBack={onBack} />
+
+            <ResearchArticleAdmin />
+
+      <Card variant="elevated" padding="sm" className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-[var(--luma-gold)]" />
+            <h3 className="text-sm font-bold text-[var(--luma-text)]">مدیریت تعرفه‌ها و تخفیف‌ها (اپ + وب‌سایت)</h3>
+          </div>
+          <Button variant="primary" size="sm" onClick={handleSavePricing} disabled={pricingSaving}>
+            {pricingSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+            <span className="mr-1">ذخیره سراسری</span>
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+          <label className="space-y-1">
+            <span className="text-[10px] text-[var(--luma-text-muted)]">پریمیوم ماهانه (تومان)</span>
+            <input
+              type="number"
+              value={pricingForm.monthly_premium}
+              onChange={(e) => setPricingForm((p) => ({ ...p, monthly_premium: Number(e.target.value) || 0 }))}
+              className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)]"
+              dir="ltr"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] text-[var(--luma-text-muted)]">پرو ماهانه (تومان)</span>
+            <input
+              type="number"
+              value={pricingForm.monthly_pro}
+              onChange={(e) => setPricingForm((p) => ({ ...p, monthly_pro: Number(e.target.value) || 0 }))}
+              className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)]"
+              dir="ltr"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] text-[var(--luma-text-muted)]">تخفیف سه‌ماهه (%)</span>
+            <input
+              type="number"
+              value={pricingForm.discount_quarterly}
+              onChange={(e) => setPricingForm((p) => ({ ...p, discount_quarterly: Number(e.target.value) || 0 }))}
+              className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)]"
+              dir="ltr"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] text-[var(--luma-text-muted)]">تخفیف شش‌ماهه (%)</span>
+            <input
+              type="number"
+              value={pricingForm.discount_semiannual}
+              onChange={(e) => setPricingForm((p) => ({ ...p, discount_semiannual: Number(e.target.value) || 0 }))}
+              className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)]"
+              dir="ltr"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] text-[var(--luma-text-muted)]">تخفیف سالیانه (%)</span>
+            <input
+              type="number"
+              value={pricingForm.discount_annual}
+              onChange={(e) => setPricingForm((p) => ({ ...p, discount_annual: Number(e.target.value) || 0 }))}
+              className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)]"
+              dir="ltr"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] text-[var(--luma-text-muted)]">تخفیف تمدید (%)</span>
+            <input
+              type="number"
+              value={pricingForm.renewal_discount}
+              onChange={(e) => setPricingForm((p) => ({ ...p, renewal_discount: Number(e.target.value) || 0 }))}
+              className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)]"
+              dir="ltr"
+            />
+          </label>
+        </div>
+
+        {pricingMsg && (
+          <div className={'p-2 rounded-lg text-xs text-center ' + (pricingMsg.type === 'success' ? 'bg-green-500/10 border border-green-500/30 text-green-400' : 'bg-red-500/10 border border-red-500/30 text-red-400')}>
+            {pricingMsg.text}
+          </div>
+        )}
+      </Card>
 
       <div className="grid grid-cols-4 gap-2">
         <Card variant="elevated" padding="sm" className="text-center">
           <Users className="w-4 h-4 text-[var(--luma-gold)] mx-auto mb-1" />
           <p className="text-lg font-bold text-[var(--luma-text)]">{stats.total}</p>
-          <p className="text-[9px] text-[var(--luma-text-muted)]">کاربر</p>
+          <p className="text-[9px] text-[var(--luma-text-muted)]">{t['admin_stat_users']}</p>
         </Card>
         <Card variant="elevated" padding="sm" className="text-center">
           <Shield className="w-4 h-4 text-amber-400 mx-auto mb-1" />
           <p className="text-lg font-bold text-[var(--luma-text)]">{stats.admins}</p>
-          <p className="text-[9px] text-[var(--luma-text-muted)]">ادمین</p>
+          <p className="text-[9px] text-[var(--luma-text-muted)]">{t['admin_stat_admins']}</p>
         </Card>
         <Card variant="elevated" padding="sm" className="text-center">
           <Crown className="w-4 h-4 text-slate-300 mx-auto mb-1" />
           <p className="text-lg font-bold text-[var(--luma-text)]">{stats.premium}</p>
-          <p className="text-[9px] text-[var(--luma-text-muted)]">پریمیوم</p>
+          <p className="text-[9px] text-[var(--luma-text-muted)]">{t['admin_stat_premium']}</p>
         </Card>
         <Card variant="elevated" padding="sm" className="text-center">
           <Crown className="w-4 h-4 text-[var(--luma-gold)] mx-auto mb-1" />
           <p className="text-lg font-bold text-[var(--luma-text)]">{stats.pro}</p>
-          <p className="text-[9px] text-[var(--luma-text-muted)]">حرفه‌ای</p>
+          <p className="text-[9px] text-[var(--luma-text-muted)]">{t['admin_stat_pro']}</p>
         </Card>
       </div>
 
       {/* انتخاب مدت زمان اعطای اشتراک توسط ادمین */}
       <Card variant="elevated" padding="sm">
-        <p className="text-xs text-[var(--luma-text-muted)] mb-2">مدت فعال‌سازی دستی اشتراک:</p>
+        <p className="text-xs text-[var(--luma-text-muted)] mb-2">{t['admin_duration_title']}</p>
         <div className="grid grid-cols-4 gap-1.5">
           {[
-            { days: 30, label: '۱ ماهه' },
-            { days: 90, label: '۳ ماهه' },
-            { days: 180, label: '۶ ماهه' },
-            { days: 365, label: '۱ ساله' },
+            { days: 30, label: t['admin_duration_1m'] },
+            { days: 90, label: t['admin_duration_3m'] },
+            { days: 180, label: t['admin_duration_6m'] },
+            { days: 365, label: t['admin_duration_1y'] },
           ].map((item) => (
             <button
               key={item.days}
@@ -184,7 +288,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="جستجوی کاربر..."
+          placeholder={t['admin_search_ph']}
           className="w-full pr-10 pl-4 py-2.5 rounded-xl bg-[var(--luma-bg-elevated)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] text-sm"
         />
       </div>
@@ -214,7 +318,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <p className="text-sm font-medium text-[var(--luma-text)] truncate">
-                      {u.displayName || u.username || 'کاربر'}
+                      {u.displayName || u.username || t['common_user_fallback']}
                     </p>
                     {u.role === 'admin' && (
                       <Shield className="w-3 h-3 text-amber-400 flex-shrink-0" />
@@ -222,16 +326,16 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                   </div>
                   <p className="text-[10px] text-[var(--luma-text-muted)] truncate">@{u.username}</p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Crown className={'w-3 h-3 ' + PLAN_COLORS[u.plan]} />
-                    <span className={'text-[10px] ' + PLAN_COLORS[u.plan]}>
-                      {PLAN_LABELS[u.plan]}
+                    <Crown className={'w-3 h-3 ' + (u.plan === 'pro' ? 'text-[var(--luma-gold)]' : u.plan === 'premium' ? 'text-slate-300' : 'text-[var(--luma-text-muted)]')} />
+                    <span className={'text-[10px] ' + (u.plan === 'pro' ? 'text-[var(--luma-gold)]' : u.plan === 'premium' ? 'text-slate-300' : 'text-[var(--luma-text-muted)]')}>
+                      {t[`admin_plan_${u.plan}` as TranslationKey]}
                     </span>
                     {u.plan !== 'free' && (
                       <>
                         <span className="text-[10px] text-[var(--luma-text-subtle)]">•</span>
                         <Calendar className="w-3 h-3 text-[var(--luma-text-muted)]" />
                         <span className="text-[10px] text-[var(--luma-text-muted)]">
-                          {formatDate(u.subscriptionUntil)}
+                          {formatDate(u.subscriptionUntil, lang)}
                         </span>
                       </>
                     )}
@@ -243,7 +347,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                   onClick={() => handleToggleRole(u)}
                   disabled={actionLoading === u.id || u.id === currentUser?.id}
                   className="p-1.5 rounded-lg hover:bg-[var(--luma-bg-subtle)] disabled:opacity-30"
-                  title={u.role === 'admin' ? 'حذف ادمین' : 'ارتقا به ادمین'}
+                  title={u.role === 'admin' ? t['admin_tooltip_remove_admin'] : t['admin_tooltip_make_admin']}
                 >
                   <UserCog
                     className={
@@ -264,7 +368,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                   {actionLoading === u.id ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
-                    `پریمیوم (${selectedDays} روز)`
+                    t['admin_btn_premium_days'].replace('{0}', String(selectedDays))
                   )}
                 </Button>
                 <Button
@@ -273,7 +377,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                   onClick={() => handleActivate(u.id, 'pro', selectedDays)}
                   disabled={actionLoading === u.id}
                 >
-                  {`حرفه‌ای (${selectedDays} روز)`}
+                  {t['admin_btn_pro_days'].replace('{0}', String(selectedDays))}
                 </Button>
                 {u.plan !== 'free' && (
                   <Button
@@ -283,7 +387,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                     disabled={actionLoading === u.id}
                     className="text-red-400"
                   >
-                    لغو اشتراک
+                    {t['admin_btn_cancel_sub']}
                   </Button>
                 )}
               </div>

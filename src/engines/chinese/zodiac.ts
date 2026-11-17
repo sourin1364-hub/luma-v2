@@ -1,86 +1,30 @@
-import type {
-  ChineseAnimal,
-  ChineseElement,
-  ChineseZodiacResult
-} from './types';
-import {
-  CHINESE_ANIMALS,
-  CHINESE_ELEMENTS,
-  CHINESE_NEW_YEAR_DATES
-} from './constants';
+﻿import { CHINESE_NEW_YEAR_DATES, CHINESE_ANIMALS, CHINESE_ELEMENTS } from './constants';
+import type { ChineseZodiacResult } from './types';
 
-const ANIMAL_ORDER: ChineseAnimal[] = [
-  'rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake',
-  'horse', 'goat', 'monkey', 'rooster', 'dog', 'pig'
-];
+export function calculateChineseZodiac(gregorianYear: number, gregorianMonth: number, gregorianDay: number): ChineseZodiacResult {
+  const newYearData = CHINESE_NEW_YEAR_DATES[gregorianYear] || [2, 10];
+  const [nm, nd] = Array.isArray(newYearData) ? newYearData : [2, 10];
 
-const ELEMENT_ORDER: ChineseElement[] = [
-  'wood', 'fire', 'earth', 'metal', 'water'
-];
-
-/**
- * تعیین سال چینی بر اساس تاریخ میلادی.
- * اگر تاریخ قبل از سال نو چینی باشد، سال چینی = سال میلادی - 1
- */
-export function getChineseYear(gregorianYear: number, gregorianMonth: number, gregorianDay: number): number {
-  const newYearStr = CHINESE_NEW_YEAR_DATES[gregorianYear];
-  if (!newYearStr) {
-    // اگر تاریخ سال نو موجود نبود، فرض می‌کنیم بعد از فوریه است
-    return gregorianMonth > 2 ? gregorianYear : gregorianYear - 1;
-  }
-  const [, nm, nd] = newYearStr.split('-').map(Number);
-  const isBeforeNewYear =
-    gregorianMonth < nm ||
-    (gregorianMonth === nm && gregorianDay < nd);
-  return isBeforeNewYear ? gregorianYear - 1 : gregorianYear;
-}
-
-/**
- * تعیین حیوان چینی بر اساس سال چینی.
- */
-export function getAnimal(chineseYear: number): ChineseAnimal {
-  const index = ((chineseYear - 4) % 12 + 12) % 12;
-  return ANIMAL_ORDER[index];
-}
-
-/**
- * تعیین عنصر چینی بر اساس سال چینی.
- */
-export function getElement(chineseYear: number): ChineseElement {
-  const index = Math.floor((((chineseYear - 4) % 10) + 10) % 10 / 2);
-  return ELEMENT_ORDER[index];
-}
-
-/**
- * محاسبه کامل زودیاک چینی از تاریخ تولد میلادی.
- */
-export function calculateChineseZodiac(
-  year: number,
-  month: number,
-  day: number
-): ChineseZodiacResult {
-  const chineseYear = getChineseYear(year, month, day);
-  const animal = getAnimal(chineseYear);
-  const element = getElement(chineseYear);
-
-  const animalInfo = CHINESE_ANIMALS.find(a => a.animal === animal);
-  const elementInfo = CHINESE_ELEMENTS.find(e => e.element === element);
-
-  if (!animalInfo || !elementInfo) {
-    throw new Error('Chinese zodiac data not found');
+  let effectiveYear = gregorianYear;
+  if (gregorianMonth < nm || (gregorianMonth === nm && gregorianDay < nd)) {
+    effectiveYear = gregorianYear - 1;
   }
 
-  const newYearDate = CHINESE_NEW_YEAR_DATES[year] || '';
-  const combinedName = animalInfo.nameFa + ' ' + elementInfo.nameFa;
+  const animalIndex = ((effectiveYear - 4) % 12 + 12) % 12;
+  const animal = CHINESE_ANIMALS[animalIndex] || CHINESE_ANIMALS[0];
+
+  const elementIndex = Math.floor((((effectiveYear - 4) % 10 + 10) % 10) / 2);
+  const element = CHINESE_ELEMENTS[elementIndex] || CHINESE_ELEMENTS[0];
+
+  const formattedDate = `${gregorianYear}-${String(nm).padStart(2, '0')}-${String(nd).padStart(2, '0')}`;
 
   return {
     animal,
-    animalInfo,
     element,
-    elementInfo,
-    year,
-    chineseYear,
-    newYearDate,
-    combinedName
-  };
+    polarity: effectiveYear % 2 === 0 ? 'yang' : 'yin',
+    effectiveYear,
+    newYearDate: formattedDate,
+    keywords: [...animal.keywords, ...element.keywords],
+    summary: `${animal.nameFa} ${element.nameFa} (${effectiveYear})`,
+  } as unknown as ChineseZodiacResult;
 }

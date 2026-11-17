@@ -4,6 +4,7 @@ import { ALL_TAROT_CARDS } from '../../engines/tarot';
 import type { TarotCard, SpreadPosition } from '../../engines/tarot/types';
 import { getAssetUrl } from '../../utils/assetPath';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { useLanguageStore, UI_TRANSLATIONS, translateNodeText } from '../../i18n/useLanguageStore';
 
 interface TarotCardDeckProps {
   spreadId?: string;
@@ -15,10 +16,6 @@ interface TarotCardDeckProps {
   onCardSelect?: (id: string) => void;
 }
 
-/**
- * مختصات هندسی واقعی (درصد X و Y و زاویه چرخش) برای چیدمان‌های مختلف تاروت
- * تا کارت‌های انتخاب‌شده دقیقاً به شکل همان فال (صلیب سلتیک، نعل اسب و...) روی میز قرار بگیرند.
- */
 function getSpreadSlotCoords(
   spreadId: string,
   index: number,
@@ -26,80 +23,76 @@ function getSpreadSlotCoords(
 ): { left: string; top: string; rotate?: number } {
   if (spreadId === 'celtic-cross') {
     const celticCoords: { left: string; top: string; rotate?: number }[] = [
-      { left: '62%', top: '48%', rotate: 0 },   // 1. مرکز صلیب
-      { left: '62%', top: '48%', rotate: 90 },  // 2. کارت متقاطع افقی روی کارت اول
-      { left: '62%', top: '82%' },              // 3. پایین صلیب (ریشه)
-      { left: '84%', top: '48%' },              // 4. راست صلیب (گذشته)
-      { left: '62%', top: '14%' },              // 5. بالای صلیب (هدف)
-      { left: '40%', top: '48%' },              // 6. چپ صلیب (آینده نزدیک)
-      { left: '16%', top: '84%' },              // 7. ستون کنار - کارت اول از پایین
-      { left: '16%', top: '60%' },              // 8. ستون کنار - کارت دوم
-      { left: '16%', top: '36%' },              // 9. ستون کنار - کارت سوم
-      { left: '16%', top: '12%' },              // 10. ستون کنار - راس (نتیجه نهایی)
+      { left: '64%', top: '50%', rotate: 0 },
+      { left: '64%', top: '50%', rotate: 90 },
+      { left: '64%', top: '82%' },
+      { left: '85%', top: '50%' },
+      { left: '64%', top: '18%' },
+      { left: '43%', top: '50%' },
+      { left: '16%', top: '84%' },
+      { left: '16%', top: '62%' },
+      { left: '16%', top: '40%' },
+      { left: '16%', top: '18%' },
     ];
     return celticCoords[index] || { left: '50%', top: '50%' };
   }
 
   if (spreadId === 'horseshoe' || spreadId === 'weekly') {
-    // شکل هندسی نعل اسب (قوس ۷ کارتی)
     const horseshoeCoords = [
-      { left: '12%', top: '78%', rotate: -18 },
-      { left: '20%', top: '46%', rotate: -10 },
-      { left: '34%', top: '22%', rotate: -4 },
-      { left: '50%', top: '14%', rotate: 0 },
-      { left: '66%', top: '22%', rotate: 4 },
-      { left: '80%', top: '46%', rotate: 10 },
-      { left: '88%', top: '78%', rotate: 18 },
+      { left: '12%', top: '76%', rotate: -16 },
+      { left: '21%', top: '48%', rotate: -9 },
+      { left: '34%', top: '26%', rotate: -4 },
+      { left: '50%', top: '18%', rotate: 0 },
+      { left: '66%', top: '26%', rotate: 4 },
+      { left: '79%', top: '48%', rotate: 9 },
+      { left: '88%', top: '76%', rotate: 16 },
     ];
     return horseshoeCoords[index] || { left: '50%', top: '50%' };
   }
 
   if (spreadId === 'relationship' || spreadId === 'career') {
-    // چیدمان هندسی صلیب ۵ کارتی رابطه و شغل
     const fiveCoords = [
-      { left: '75%', top: '50%' }, // شما / وضعیت
-      { left: '25%', top: '50%' }, // طرف مقابل / مهارت
-      { left: '50%', top: '50%' }, // مرکز رابطه
-      { left: '50%', top: '82%' }, // مانع
-      { left: '50%', top: '18%' }, // آینده و نتیجه
+      { left: '76%', top: '52%' },
+      { left: '24%', top: '52%' },
+      { left: '50%', top: '52%' },
+      { left: '50%', top: '82%' },
+      { left: '50%', top: '22%' },
     ];
     return fiveCoords[index] || { left: '50%', top: '50%' };
   }
 
   if (spreadId === 'monthly') {
-    // چیدمان لوزی ۴ هفته ماه
     const fourCoords = [
-      { left: '50%', top: '18%' },
-      { left: '78%', top: '50%' },
+      { left: '50%', top: '22%' },
+      { left: '78%', top: '52%' },
       { left: '50%', top: '82%' },
-      { left: '22%', top: '50%' },
+      { left: '22%', top: '52%' },
     ];
     return fourCoords[index] || { left: '50%', top: '50%' };
   }
 
   if (spreadId === 'yearly') {
-    // دایره ۱۲ ماهه ساعت‌گرد نجومی
     const angle = ((index - 3) * (2 * Math.PI)) / 12;
-    const x = 50 + Math.cos(angle) * 38;
-    const y = 50 + Math.sin(angle) * 38;
+    const x = 50 + Math.cos(angle) * 36;
+    const y = 52 + Math.sin(angle) * 36;
     return { left: `${x}%`, top: `${y}%` };
   }
 
   if (total === 1) {
-    return { left: '50%', top: '50%' };
+    return { left: '50%', top: '52%' };
   }
 
   if (total === 3) {
     const threeCoords = [
-      { left: '76%', top: '50%' }, // گذشته / راست
-      { left: '50%', top: '44%' }, // حال / مرکز
-      { left: '24%', top: '50%' }, // آینده / چپ
+      { left: '76%', top: '54%' },
+      { left: '50%', top: '48%' },
+      { left: '24%', top: '54%' },
     ];
-    return threeCoords[index] || { left: '50%', top: '50%' };
+    return threeCoords[index] || { left: '50%', top: '52%' };
   }
 
-  const step = 80 / Math.max(1, total - 1);
-  return { left: `${10 + index * step}%`, top: '50%' };
+  const step = 76 / Math.max(1, total - 1);
+  return { left: `${12 + index * step}%`, top: '52%' };
 }
 
 export function TarotCardDeck({
@@ -111,6 +104,9 @@ export function TarotCardDeck({
   shuffleKey = 0,
   onCardSelect = () => {},
 }: TarotCardDeckProps) {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
+
   const [phase, setPhase] = useState<'shuffling' | 'dealing'>('shuffling');
   const isComplete = selected.length >= cardCount;
   const backImageUrl = getAssetUrl('assets/tarot/cards/back.webp');
@@ -137,11 +133,6 @@ export function TarotCardDeck({
             exit={{ opacity: 0, scale: 1.05, transition: { duration: 0.25 } }}
             className="relative h-72 flex flex-col items-center justify-center overflow-hidden my-2"
           >
-            <motion.div
-              animate={{ scale: [1, 1.35, 1], opacity: [0.25, 0.55, 0.25] }}
-              transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute w-44 h-44 rounded-full bg-[var(--luma-gold)]/20 blur-2xl pointer-events-none"
-            />
             <div className="relative w-32 h-48 flex items-center justify-center">
               {Array.from({ length: 10 }).map((_, i) => {
                 const offsetDir = i % 2 === 0 ? -1 : 1;
@@ -157,14 +148,14 @@ export function TarotCardDeck({
                     style={{ zIndex: 20 - i }}
                     className="absolute w-28 h-44 rounded-xl overflow-hidden border-2 border-[var(--luma-gold)]/70 shadow-2xl bg-[var(--luma-bg-elevated)]"
                   >
-                    <img src={backImageUrl} alt="بر زدن کارت" className="w-full h-full object-cover" />
+                    <img src={backImageUrl} alt={t['tarot_ui_shuffling']} className="w-full h-full object-cover" />
                   </motion.div>
                 );
               })}
             </div>
             <div className="mt-5 flex items-center gap-1.5 text-xs text-[var(--luma-gold)] animate-pulse">
               <Sparkles className="w-4 h-4" />
-              <span>در حال بر زدن و چیدن الگوی هندسی فال...</span>
+              <span>{t['tarot_ui_shuffling']}</span>
             </div>
           </motion.div>
         ) : (
@@ -174,85 +165,88 @@ export function TarotCardDeck({
             animate={{ opacity: 1 }}
             className="space-y-4"
           >
-            {/* ۱. میز الگوی هندسی اختصاصی هر فال (صلیب سلتیک، نعل اسب و...) */}
-            <div
-              className={`relative w-full ${boardHeightClass} rounded-2xl bg-[var(--luma-bg-elevated)]/90 border border-[var(--luma-gold)]/30 shadow-inner overflow-hidden`}
-            >
-              <div className="absolute top-2 right-3 text-[10px] text-[var(--luma-text-muted)]">
-                الگوی چیدمان کارت‌های انتخاب‌شده ({selected.length} از {cardCount})
+            {/* ۱. کادر میز چیدمان */}
+            <div className="rounded-2xl bg-[var(--luma-bg-elevated)] border border-[var(--luma-gold)]/35 shadow-inner overflow-hidden">
+              <div className="px-3.5 py-2 bg-[var(--luma-bg-subtle)] border-b border-[var(--luma-border)] flex items-center justify-between text-[11px]">
+                <span className="font-bold text-[var(--luma-gold)]">
+                  {t['tarot_ui_layout']}
+                </span>
+                <span className="text-[var(--luma-text-muted)] font-mono">
+                  {selected.length} / {cardCount}
+                </span>
               </div>
 
-              {Array.from({ length: cardCount }).map((_, posIdx) => {
-                const coords = getSpreadSlotCoords(spreadId, posIdx, cardCount);
-                const selectedCardId = selected[posIdx];
-                const posLabel = positions[posIdx]?.nameFa || `کارت ${posIdx + 1}`;
-                const slotSize =
-                  cardCount >= 10
-                    ? 'w-11 h-16'
-                    : cardCount >= 5
-                    ? 'w-12 h-20'
-                    : 'w-16 h-24';
+              <div className={`relative w-full ${boardHeightClass}`}>
+                {Array.from({ length: cardCount }).map((_, posIdx) => {
+                  const coords = getSpreadSlotCoords(spreadId, posIdx, cardCount);
+                  const selectedCardId = selected[posIdx];
+                  const posLabel = positions[posIdx]
+                    ? translateNodeText(positions[posIdx].nameFa, lang)
+                    : `${t['tarot_ui_card_n']} ${posIdx + 1}`;
+                  const slotSize =
+                    cardCount >= 10
+                      ? 'w-11 h-16'
+                      : cardCount >= 5
+                      ? 'w-12 h-20'
+                      : 'w-16 h-24';
 
-                return (
-                  <div
-                    key={posIdx}
-                    style={{
-                      left: coords.left,
-                      top: coords.top,
-                      transform: `translate(-50%, -50%) rotate(${coords.rotate || 0}deg)`,
-                      zIndex: coords.rotate ? 25 : 10 + posIdx,
-                    }}
-                    className={`absolute ${slotSize} rounded-lg border border-dashed border-[var(--luma-gold)]/50 bg-[var(--luma-bg-subtle)] flex flex-col items-center justify-center transition-all`}
-                  >
-                    {selectedCardId ? (
-                      <motion.div
-                        initial={{ scale: 0.2, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="w-full h-full rounded-lg overflow-hidden border-2 border-[var(--luma-gold)] shadow-lg relative"
-                      >
-                        <img
-                          src={backImageUrl}
-                          alt={posLabel}
-                          className="w-full h-full object-cover"
-                        />
-                        <span className="absolute inset-0 bg-black/40 flex items-center justify-center text-[10px] font-bold text-[var(--luma-gold)]">
-                          {posIdx + 1}
-                        </span>
-                      </motion.div>
-                    ) : (
-                      <div className="text-center px-0.5">
-                        <span className="block text-[10px] font-bold text-[var(--luma-gold)]/70">
-                          {posIdx + 1}
-                        </span>
-                        <span className="block text-[8px] text-[var(--luma-text-subtle)] truncate max-w-[44px]">
-                          {posLabel}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  return (
+                    <div
+                      key={posIdx}
+                      style={{
+                        left: coords.left,
+                        top: coords.top,
+                        transform: `translate(-50%, -50%) rotate(${coords.rotate || 0}deg)`,
+                        zIndex: coords.rotate ? 25 : 10 + posIdx,
+                      }}
+                      className={`absolute ${slotSize} rounded-lg border border-dashed border-[var(--luma-gold)]/60 bg-[var(--luma-bg-subtle)] flex flex-col items-center justify-center transition-all`}
+                    >
+                      {selectedCardId ? (
+                        <motion.div
+                          initial={{ scale: 0.2, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="w-full h-full rounded-lg overflow-hidden border-2 border-[var(--luma-gold)] shadow-lg relative"
+                        >
+                          <img
+                            src={backImageUrl}
+                            alt={posLabel}
+                            className="w-full h-full object-cover"
+                          />
+                          <span className="absolute inset-0 bg-black/45 flex items-center justify-center text-[10px] font-bold text-[#FDE68A]">
+                            {posIdx + 1}
+                          </span>
+                        </motion.div>
+                      ) : (
+                        <div className="text-center px-0.5 pointer-events-none">
+                          <span className="block text-[11px] font-bold text-[var(--luma-gold)]">
+                            {posIdx + 1}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* ۲. پیام انتظار روی سایر کارت‌های غیرفعال پس از تکمیل انتخاب */}
+            {/* ۲. پیام انتظار پس از تکمیل انتخاب */}
             <div className="relative">
               {isComplete && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className=" inset-0 z-30 rounded-2xl bg-black/80 backdrop-blur-sm border-2 border-[var(--luma-gold)] p-6 flex flex-col items-center justify-center text-center my-2 shadow-2xl"
+                  className="rounded-2xl bg-black/85 backdrop-blur-sm border-2 border-[var(--luma-gold)] p-6 flex flex-col items-center justify-center text-center my-2 shadow-2xl"
                 >
                   <Loader2 className="w-8 h-8 text-[var(--luma-gold)] animate-spin mb-3" />
                   <h3 className="font-heading text-sm text-[var(--luma-gold)] font-bold mb-1">
-                    فال شما در حال تفسیر و بررسی است، لطفاً منتظر باشید...
+                    {t['tarot_ui_interpreting']}
                   </h3>
-                  <p className="text-xs text-[var(--luma-text-muted)]">
-                    در حال ترکیب انرژی کارت‌ها و جایگاه‌های چیدمان شما
+                  <p className="text-xs text-slate-300">
+                    {t['tarot_ui_interpreting_sub']}
                   </p>
                 </motion.div>
               )}
 
-              {/* شبکه کارت‌ها برای انتخاب */}
               <div
                 className={
                   'grid grid-cols-6 gap-2 transition-opacity duration-300 ' +
@@ -267,12 +261,12 @@ export function TarotCardDeck({
                       key={card.id}
                       initial={{ opacity: 0, scale: 0.4, y: -30 }}
                       animate={{
-                        opacity: isSelected ? 0.35 : 0.92,
+                        opacity: isSelected ? 0.35 : 0.95,
                         scale: isSelected ? 0.92 : 1,
                         y: 0,
                       }}
-                      transition={{ delay: index * 0.005 }}
-                      whileHover={!isSelected && !isComplete ? { scale: 1.08, y: -4 } : {}}
+                      transition={{ delay: index * 0.004 }}
+                      whileHover={!isSelected && !isComplete ? { scale: 1.06, y: -3 } : {}}
                       whileTap={!isSelected && !isComplete ? { scale: 0.94 } : {}}
                       onClick={() => {
                         if (!isSelected && !isComplete) {
@@ -287,7 +281,7 @@ export function TarotCardDeck({
                     >
                       <img
                         src={backImageUrl}
-                        alt="پشت کارت"
+                        alt={t['tarot_ui_card_back']}
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />

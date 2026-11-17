@@ -1,5 +1,6 @@
 import type { NatalChart, PlanetPosition, HouseCusp } from '../../engines/astronomy/types';
-import { PLANET_NAMES_FA } from '../../engines/astronomy/constants';
+import { PLANET_NAMES } from '../../engines/astronomy/constants';
+import { useLanguageStore } from '../../i18n/useLanguageStore';
 
 interface ChartWheelProps {
   chart: NatalChart;
@@ -20,7 +21,6 @@ const ASPECT_COLORS: Record<string, string> = {
   sextile: '#3B82F6'
 };
 
-// تبدیل درجه (0-360) به مختصات SVG (0 درجه در بالا، ساعتگرد)
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   const angleRad = ((angleDeg - 90) * Math.PI) / 180;
   return {
@@ -30,6 +30,8 @@ function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
 }
 
 export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
+  const lang = useLanguageStore((s) => s.lang);
+
   const cx = size / 2;
   const cy = size / 2;
   const outerR = size / 2 - 4;
@@ -38,15 +40,12 @@ export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
   const planetR = houseR - 25;
   const centerR = 30;
 
-  // ASC به‌عنوان نقطه شروع (سمت چپ، ۹ ساعت)
   const ascLongitude = chart.ascendant.longitude;
 
-  // تبدیل longitude به زاویه SVG (ASC در 180 درجه = سمت چپ)
   const toSvgAngle = (longitude: number) => {
     return (longitude - ascLongitude + 180 + 360) % 360;
   };
 
-  // رسم خطوط خانه‌ها
   const houseLines = chart.houses.map((h: HouseCusp) => {
     const angle = toSvgAngle(h.longitude);
     const inner = polarToCartesian(cx, cy, centerR, angle);
@@ -62,7 +61,6 @@ export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
     );
   });
 
-  // شماره خانه‌ها
   const houseNumbers = chart.houses.map((h: HouseCusp) => {
     const angle = toSvgAngle(h.longitude) + 15;
     const pos = polarToCartesian(cx, cy, houseR - 8, angle);
@@ -81,7 +79,6 @@ export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
     );
   });
 
-  // نمادهای برج‌ها
   const signSymbols = SIGN_SYMBOLS.map((symbol, idx) => {
     const angle = (idx * 30 + 15);
     const pos = polarToCartesian(cx, cy, signR, angle);
@@ -99,7 +96,6 @@ export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
     );
   });
 
-  // خطوط جنبه‌ها
   const aspectLines = chart.aspects.slice(0, 20).map((aspect, idx) => {
     const p1 = chart.planets.find((p: PlanetPosition) => p.planet === aspect.planet1);
     const p2 = chart.planets.find((p: PlanetPosition) => p.planet === aspect.planet2);
@@ -122,7 +118,6 @@ export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
     );
   });
 
-  // سیارات
   const planets = chart.planets.map((p: PlanetPosition) => {
     const angle = toSvgAngle(p.longitude);
     const pos = polarToCartesian(cx, cy, planetR, angle);
@@ -147,11 +142,9 @@ export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
     );
   });
 
-  // ASC و MC
   const ascPos = polarToCartesian(cx, cy, outerR - 4, 180);
   const ascTextPos = polarToCartesian(cx, cy, outerR + 0, 180);
 
-  // دایره میانی (مرکز)
   const centerElements = (
     <>
       <circle cx={cx} cy={cy} r={centerR} fill="rgba(214,181,109,0.05)" stroke="rgba(214,181,109,0.3)" strokeWidth={1} />
@@ -187,13 +180,11 @@ export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
         viewBox={`0 0 ${size} ${size}`}
         className="overflow-visible"
       >
-        {/* دایره بیرونی */}
         <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="rgba(214,181,109,0.3)" strokeWidth={1.5} />
         <circle cx={cx} cy={cy} r={signR} fill="none" stroke="rgba(214,181,109,0.15)" strokeWidth={0.8} />
         <circle cx={cx} cy={cy} r={houseR} fill="none" stroke="rgba(214,181,109,0.2)" strokeWidth={1} />
         <circle cx={cx} cy={cy} r={planetR + 15} fill="none" stroke="rgba(214,181,109,0.1)" strokeWidth={0.5} />
 
-        {/* خطوط برج‌ها */}
         {SIGN_SYMBOLS.map((_, idx) => {
           const angle = idx * 30;
           const inner = polarToCartesian(cx, cy, houseR, angle);
@@ -215,7 +206,6 @@ export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
         {houseNumbers}
         {planets}
 
-        {/* ASC Marker */}
         <circle cx={ascPos.x} cy={ascPos.y} r={3} fill="#D6B56D" />
         <text
           x={ascTextPos.x} y={ascTextPos.y}
@@ -232,13 +222,12 @@ export function ChartWheel({ chart, size = 340 }: ChartWheelProps) {
         {centerElements}
       </svg>
 
-      {/* راهنمای سیارات */}
       <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs w-full max-w-xs">
         {chart.planets.map((p: PlanetPosition) => (
           <div key={`legend-${p.planet}`} className="flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-[var(--luma-text-muted)]">
               <span className="text-[var(--luma-gold)] text-sm">{PLANET_SYMBOLS[p.planet]}</span>
-              {PLANET_NAMES_FA[p.planet]}
+              {PLANET_NAMES[p.planet][lang]}
             </span>
             <span className="text-[var(--luma-text-subtle)] font-mono text-[10px]">
               {p.signDegree.toFixed(0)}° {p.retrograde && '℞'}

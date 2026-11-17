@@ -1,6 +1,19 @@
 import { Crown, Sparkles, Infinity } from 'lucide-react';
+import { useLanguageStore, UI_TRANSLATIONS } from '../../i18n/useLanguageStore';
+import { formatNum } from '../../i18n/format';
 
 export type Plan = 'free' | 'premium' | 'pro';
+
+export function SubscriptionStatusNotice({ error }: { error: string | null }) {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
+  if (!error) return null;
+  return (
+    <div role="alert" className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+      {t['subscription_load_failed']}
+    </div>
+  );
+}
 
 interface SubscriptionBadgeProps {
   plan: Plan;
@@ -9,30 +22,6 @@ interface SubscriptionBadgeProps {
   variant?: 'compact' | 'full';
 }
 
-const PLAN_CONFIG = {
-  free: {
-    label: 'رایگان',
-    icon: Sparkles,
-    color: 'text-[var(--luma-text-muted)]',
-    bg: 'bg-[var(--luma-bg-subtle)]',
-    border: 'border-[var(--luma-border)]',
-  },
-  premium: {
-    label: 'پریمیوم',
-    icon: Crown,
-    color: 'text-slate-300',
-    bg: 'bg-slate-500/10',
-    border: 'border-slate-400/30',
-  },
-  pro: {
-    label: 'حرفه‌ای',
-    icon: Crown,
-    color: 'text-[var(--luma-gold)]',
-    bg: 'bg-[var(--luma-gold-glow)]',
-    border: 'border-[var(--luma-gold)]/40',
-  },
-};
-
 function getRemainingDays(expiresAt: string | null): number | null {
   if (!expiresAt) return null;
   const diff = new Date(expiresAt).getTime() - new Date().getTime();
@@ -40,23 +29,54 @@ function getRemainingDays(expiresAt: string | null): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-function formatRemaining(expiresAt: string | null, isAdmin: boolean): string {
-  if (isAdmin) return 'نامحدود';
-  const days = getRemainingDays(expiresAt);
-  if (days === null) return '—';
-  if (days <= 0) return 'منقضی شده';
-  if (days === 1) return '۱ روز باقیمانده';
-  if (days < 30) return `${days} روز باقیمانده`;
-  const months = Math.floor(days / 30);
-  const remainingDays = days % 30;
-  if (remainingDays === 0) return `${months} ماه باقیمانده`;
-  return `${months} ماه و ${remainingDays} روز باقیمانده`;
-}
-
 export function SubscriptionBadge({ plan, isAdmin, expiresAt, variant = 'compact' }: SubscriptionBadgeProps) {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
+
+  const PLAN_CONFIG = {
+    free: {
+      label: t['sub_badge_free'],
+      icon: Sparkles,
+      color: 'text-[var(--luma-text-muted)]',
+      bg: 'bg-[var(--luma-bg-subtle)]',
+      border: 'border-[var(--luma-border)]',
+    },
+    premium: {
+      label: t['sub_badge_premium'],
+      icon: Crown,
+      color: 'text-slate-300',
+      bg: 'bg-slate-500/10',
+      border: 'border-slate-400/30',
+    },
+    pro: {
+      label: t['sub_badge_pro'],
+      icon: Crown,
+      color: 'text-[var(--luma-gold)]',
+      bg: 'bg-[var(--luma-gold-glow)]',
+      border: 'border-[var(--luma-gold)]/40',
+    },
+  };
+
   const config = PLAN_CONFIG[plan];
   const Icon = config.icon;
-  const remaining = formatRemaining(expiresAt, isAdmin);
+
+  let remaining = '—';
+  if (isAdmin) {
+    remaining = t['sub_badge_unlimited'];
+  } else {
+    const days = getRemainingDays(expiresAt);
+    if (days !== null) {
+      if (days <= 0) remaining = t['sub_badge_expired'];
+      else if (days === 1) remaining = t['sub_badge_1_day'];
+      else if (days < 30) remaining = `${formatNum(days, lang)} ${t['sub_badge_days']}`;
+      else {
+        const months = Math.floor(days / 30);
+        const remDays = days % 30;
+        if (remDays === 0) remaining = `${formatNum(months, lang)} ${t['sub_badge_months']}`;
+        else remaining = `${formatNum(months, lang)} ${t['sub_badge_months_days']} ${formatNum(remDays, lang)} ${t['sub_badge_days']}`;
+      }
+    }
+  }
 
   if (variant === 'compact') {
     return (
@@ -67,7 +87,7 @@ export function SubscriptionBadge({ plan, isAdmin, expiresAt, variant = 'compact
         }
       >
         <Icon className="w-3 h-3" />
-        {isAdmin ? 'ادمین' : config.label}
+        {isAdmin ? t['sub_badge_admin'] : config.label}
       </span>
     );
   }
@@ -78,10 +98,10 @@ export function SubscriptionBadge({ plan, isAdmin, expiresAt, variant = 'compact
         <Icon className={'w-5 h-5 ' + config.color} />
         <div className="flex-1">
           <p className={'text-sm font-bold ' + config.color}>
-            {isAdmin ? 'ادمین LUMA' : `مشترک ${config.label}`}
+            {isAdmin ? t['sub_badge_admin_title'] : `${t['sub_badge_member']} ${config.label}`}
           </p>
           <p className="text-[10px] text-[var(--luma-text-muted)]">
-            {isAdmin ? 'دسترسی کامل به همه قابلیت‌ها' : 'اشتراک فعال'}
+            {isAdmin ? t['sub_badge_admin_desc'] : t['sub_badge_active']}
           </p>
         </div>
       </div>

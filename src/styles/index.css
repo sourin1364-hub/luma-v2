@@ -4,6 +4,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding:
+      max(1rem, env(safe-area-inset-top))
+      max(1rem, env(safe-area-inset-right))
+      max(1rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+  }
+
+  .modal-panel {
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - max(1rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom)));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 :root {
   --luma-bg: #F5EFE0;
   --luma-bg-elevated: #FFFFFF;
@@ -61,6 +85,12 @@ body {
   overflow-x: hidden;
 }
 
+html[lang='en'] body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-feature-settings: normal;
+  font-variant-numeric: lining-nums;
+}
+
 ::selection {
   background-color: var(--luma-gold-glow);
   color: var(--luma-text);
@@ -81,13 +111,13 @@ body {
 
 .font-heading {
   font-family: 'Vazirmatn', system-ui, sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .font-title {
   font-family: 'Vazirmatn', system-ui, sans-serif;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -110,6 +140,16 @@ body {
 }
 
 .gold-border { border: 1px solid rgba(214, 181, 109, 0.3); }
+
+.luma-amethyst .glass {
+  box-shadow: 0 0 28px rgba(157, 78, 221, 0.1);
+  animation: amethyst-glow 5s ease-in-out infinite alternate;
+}
+
+@keyframes amethyst-glow {
+  from { box-shadow: 0 0 18px rgba(157, 78, 221, 0.08); }
+  to { box-shadow: 0 0 34px rgba(192, 132, 252, 0.18); }
+}
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -134,4 +174,24 @@ body {
 /* در تم روشن: آیکون‌ها مشکی باقی می‌مانند */
 .zodiac-icon {
   filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+}
+/* جاستیفای خودکار همه پاراگراف‌ها */
+p {
+  text-align: justify;
+  text-justify: inter-word;
+  line-height: 1.8;
+}
+
+p.font-bold,
+p.font-extrabold,
+p.font-black {
+  font-weight: 500;
+}
+
+/* استثنا: متن‌های وسط‌چین (دکمه‌ها و پیام‌ها) خراب نشن */
+.text-center p, 
+p.text-center, 
+button p, 
+.text-center {
+  text-align: center !important;
 }

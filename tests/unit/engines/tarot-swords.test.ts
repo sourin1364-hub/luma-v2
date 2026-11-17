@@ -26,7 +26,7 @@ describe('Swords cards', () => {
 
   it('all cards have valid image paths', () => {
     SWORDS_CARDS.forEach(card => {
-      expect(card.imagePath).toMatch(/^\/assets\/tarot\/cards\/swords-\d{2}(-[a-z]+)?\.webp$/);
+      expect(card.imagePath).toMatch(/^\{BASE_URL\}\/assets\/tarot\/cards\/swords-\d{2}(-[a-z]+)?\.webp$/);
     });
   });
 

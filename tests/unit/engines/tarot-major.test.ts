@@ -19,7 +19,7 @@ describe('Major Arcana', () => {
 
   it('all cards have valid image paths', () => {
     MAJOR_ARCANA.forEach(card => {
-      expect(card.imagePath).toMatch(/^\/assets\/tarot\/cards\/major-\d{2}-[a-z-]+\.webp$/);
+      expect(card.imagePath).toMatch(/^\{BASE_URL\}\/assets\/tarot\/cards\/major-\d{2}-[a-z-]+\.webp$/);
     });
   });
 

@@ -17,5 +17,6 @@ export interface CityWithProvince extends City {
   lat: number;
   lon: number;
   province_name: string;
+  province_en_name?: string;
   timezone: string;
 }

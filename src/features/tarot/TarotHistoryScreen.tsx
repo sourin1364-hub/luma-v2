@@ -7,6 +7,8 @@ import { getReadings, deleteReading, type SavedReading } from './tarotHistorySer
 import { useAuthStore } from '../../store/useAuthStore';
 import { getAssetUrl } from '../../utils/assetPath';
 import type { ReadingResult } from '../../engines/tarot/types';
+import { useLanguageStore, UI_TRANSLATIONS, translateNodeText } from '../../i18n/useLanguageStore';
+import { getLocalizedCardName } from './tarotI18nResolver';
 
 interface TarotHistoryScreenProps {
   onBack: () => void;
@@ -14,7 +16,10 @@ interface TarotHistoryScreenProps {
 }
 
 export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScreenProps) {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
   const user = useAuthStore((s) => s.user);
+
   const [readings, setReadings] = useState<SavedReading[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,12 +41,12 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
   }, [user]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('آیا از حذف این فال از تاریخچه مطمئن هستید؟')) return;
+    if (!confirm(t['tarot_history_delete_confirm'])) return;
     try {
       await deleteReading(id);
       setReadings((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
-      alert('خطا در حذف فال');
+      alert(t['tarot_history_delete_error']);
     }
   };
 
@@ -64,7 +69,8 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
   const formatDate = (iso: string) => {
     try {
       const d = new Date(iso);
-      return new Intl.DateTimeFormat('fa-IR', {
+      const locale = lang === 'fa' ? 'fa-IR' : lang === 'ar' ? 'ar-SA' : lang === 'ckb' ? 'ckb-IQ' : 'en-US';
+      return new Intl.DateTimeFormat(locale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -87,17 +93,17 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
   return (
     <div className="space-y-5 pb-20">
       <PageHeader
-        title="تاریخچه فال‌ها"
-        subtitle={`${readings.length} فال ذخیره‌شده`}
+        title={t['tarot_history_title']}
+        subtitle={`${readings.length} ${t['tarot_history_count']}`}
         onBack={onBack}
       />
 
       {readings.length === 0 ? (
         <Card variant="elevated" padding="lg" className="text-center py-16">
           <History className="w-12 h-12 text-[var(--luma-gold)]/40 mx-auto mb-3" />
-          <h3 className="font-heading text-lg text-[var(--luma-text)] mb-2">هنوز فالی ذخیره نشده است</h3>
+          <h3 className="font-heading text-lg text-[var(--luma-text)] mb-2">{t['tarot_history_empty_title']}</h3>
           <p className="text-sm text-[var(--luma-text-muted)]">
-            اولین فال تاروت خود را انجام دهید تا به صورت خودکار در تاریخچه شما ثبت شود.
+            {t['tarot_history_empty_desc']}
           </p>
         </Card>
       ) : (
@@ -108,7 +114,7 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Sparkles className="w-3.5 h-3.5 text-[var(--luma-gold)]" />
-                    <h3 className="font-heading text-sm text-[var(--luma-text)]">{reading.spreadName}</h3>
+                    <h3 className="font-heading text-sm text-[var(--luma-text)]">{translateNodeText(reading.spreadName, lang)}</h3>
                   </div>
                   {reading.question && (
                     <p className="text-xs text-[var(--luma-text-muted)] italic mb-1">
@@ -123,7 +129,7 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
                       type="button"
                       onClick={() => handleViewFullReading(reading)}
                       className="p-2 rounded-full hover:bg-[var(--luma-gold)]/10 text-[var(--luma-gold)] transition-colors flex-shrink-0"
-                      title="مشاهده تفسیر کامل"
+                      title={t['tarot_history_view_full']}
                     >
                       <Eye className="w-4 h-4" />
                     </button>
@@ -132,7 +138,7 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
                     type="button"
                     onClick={() => handleDelete(reading.id)}
                     className="p-2 rounded-full hover:bg-red-500/10 text-[var(--luma-text-subtle)] hover:text-red-400 transition-colors flex-shrink-0"
-                    aria-label="حذف"
+                    aria-label={t['common_delete']}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -143,12 +149,14 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
                 {reading.cards.map((c, i) => {
                   const cardImageUrl = getAssetUrl(`assets/tarot/cards/${c.cardId}.webp`);
                   const fallbackUrl = getAssetUrl('assets/tarot/cards/back.webp');
+                  const localizedCardName = getLocalizedCardName({ id: c.cardId, name: c.name }, lang);
+                  
                   return (
                     <div key={i} className="flex flex-col items-center gap-1">
                       <div className="w-11 h-16 rounded-md overflow-hidden border border-[var(--luma-gold)]/30 bg-[var(--luma-bg-subtle)]">
                         <img
                           src={cardImageUrl}
-                          alt={c.name}
+                          alt={localizedCardName}
                           className={'w-full h-full object-cover ' + (c.isReversed ? 'rotate-180' : '')}
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = fallbackUrl;
@@ -156,7 +164,7 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
                         />
                       </div>
                       <span className="text-[9px] text-[var(--luma-text-subtle)] max-w-[48px] truncate text-center">
-                        {c.name}
+                        {localizedCardName}
                       </span>
                     </div>
                   );
@@ -188,7 +196,7 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
                     onClick={() => handleViewFullReading(reading)}
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    مشاهده کامل تحلیل و کارت‌ها
+                    {t['tarot_history_view_analysis']}
                   </Button>
                 </div>
               )}
@@ -198,7 +206,7 @@ export function TarotHistoryScreen({ onBack, onSelectReading }: TarotHistoryScre
       )}
 
       <Button variant="secondary" fullWidth onClick={onBack}>
-        بازگشت به تاروت
+        {t['tarot_history_back']}
       </Button>
     </div>
   );

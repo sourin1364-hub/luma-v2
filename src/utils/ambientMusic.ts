@@ -2,20 +2,92 @@
  * موتور تولید موسیقی محیطی آرامش‌بخش (Ambient Cosmic Music Synthesizer)
  * با استفاده از Web Audio API - بدون نیاز به فایل صوتی سنگین خارجی و بدون قطعی
  */
+import type { AppLanguage } from '../i18n/useLanguageStore';
+
 export type MusicTrackId = 'cosmos' | 'ocean' | 'fire' | 'rain' | 'forest';
 
 export interface MusicTrack {
   id: MusicTrackId;
-  nameFa: string;
-  description: string;
+  name: Record<AppLanguage, string>;
+  description: Record<AppLanguage, string>;
 }
 
 export const MUSIC_TRACKS: MusicTrack[] = [
-  { id: 'cosmos', nameFa: 'مراقبه کیهانی (۴۳۲ هرتز)', description: 'فرکانس آرامش‌بخش ستارگان و کهکشان' },
-  { id: 'ocean', nameFa: 'امواج آرام اقیانوس (عنصر آب)', description: 'صدای موج‌های ملایم دریا در شب' },
-  { id: 'fire', nameFa: 'گرمای شعله‌های آتش (عنصر آتش)', description: 'زمزمه گرم و آرامش‌بخش آتش' },
-  { id: 'rain', nameFa: 'نسیم و ابرهای بارانی (عنصر باد)', description: 'نوازش باد ملایم و باران لطیف' },
-  { id: 'forest', nameFa: 'طبیعت سبز و زمین (عنصر خاک)', description: 'هارمونی آرامش‌بخش زمین و رویش' },
+  {
+    id: 'cosmos',
+    name: {
+      fa: 'مراقبه کیهانی (۴۳۲ هرتز)',
+      en: 'Cosmic Meditation (432 Hz)',
+      ar: 'تأمل كوني (432 هرتز)',
+      ckb: 'مراقبەی گەردوونی (٤٣٢ هێرتز)',
+    },
+    description: {
+      fa: 'فرکانس آرامش‌بخش ستارگان و کهکشان',
+      en: 'The soothing frequency of stars and galaxies',
+      ar: 'ترددات مهدئة للنجوم والمجرات',
+      ckb: 'فرێکوێنسی ئارامبەخشی ئەستێرەکان و گەلەئەستێرەکان',
+    },
+  },
+  {
+    id: 'ocean',
+    name: {
+      fa: 'امواج آرام اقیانوس (عنصر آب)',
+      en: 'Calm Ocean Waves (Water Element)',
+      ar: 'أمواج المحيط الهادئة (عنصر الماء)',
+      ckb: 'شەپۆلە هێمنەکانی زەریا (توخمی ئاو)',
+    },
+    description: {
+      fa: 'صدای موج‌های ملایم دریا در شب',
+      en: 'The sound of gentle sea waves at night',
+      ar: 'صوت أمواج البحر اللطيفة في الليل',
+      ckb: 'دەنگی شەپۆلە نەرمەکانی دەریا لە شەودا',
+    },
+  },
+  {
+    id: 'fire',
+    name: {
+      fa: 'گرمای شعله‌های آتش (عنصر آتش)',
+      en: 'Warmth of Fire Flames (Fire Element)',
+      ar: 'دفء ألسنة النار (عنصر النار)',
+      ckb: 'گەرمی بڵێسەکانی ئاگر (توخمی ئاگر)',
+    },
+    description: {
+      fa: 'زمزمه گرم و آرامش‌بخش آتش',
+      en: 'The warm and soothing crackle of fire',
+      ar: 'همس النار الدافئ والمهدئ',
+      ckb: 'زمزمەی گەرم و ئارامبەخشی ئاگر',
+    },
+  },
+  {
+    id: 'rain',
+    name: {
+      fa: 'نسیم و ابرهای بارانی (عنصر باد)',
+      en: 'Breeze & Rain Clouds (Air Element)',
+      ar: 'نسيم وسحب ممطرة (عنصر الهواء)',
+      ckb: 'نسیم و هەورە باراناویەکان (توخمی با)',
+    },
+    description: {
+      fa: 'نوازش باد ملایم و باران لطیف',
+      en: 'The caress of gentle wind and soft rain',
+      ar: 'لمسة الرياح اللطيفة والمطر الناعم',
+      ckb: 'لاساییکردنەوەی بای نەرم و بارانی لەتیف',
+    },
+  },
+  {
+    id: 'forest',
+    name: {
+      fa: 'طبیعت سبز و زمین (عنصر خاک)',
+      en: 'Green Nature & Earth (Earth Element)',
+      ar: 'الطبيعة الخضراء والأرض (عنصر التراب)',
+      ckb: 'سروشتی سەوز و خاک (توخمی خاک)',
+    },
+    description: {
+      fa: 'هارمونی آرامش‌بخش زمین و رویش',
+      en: 'The soothing harmony of earth and growth',
+      ar: 'انسجام مهدئ للأرض والنمو',
+      ckb: 'هاوتەریبی ئارامبەخشی خاک و ڕواندن',
+    },
+  },
 ];
 
 class AmbientMusicEngine {

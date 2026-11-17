@@ -1,5 +1,6 @@
 ﻿import { useState, useRef } from 'react';
 import { Camera, Upload, X, Loader2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 interface AvatarPickerProps {
   currentUrl: string | null;
@@ -92,12 +93,12 @@ export function AvatarPicker({
       </div>
 
       {isOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4"
+        createPortal(<div
+          className="modal-backdrop bg-black/60"
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="w-full max-w-sm bg-[var(--luma-bg-elevated)] rounded-2xl p-5 animate-fade-in-up border border-[var(--luma-border)]"
+            className="modal-panel w-full max-w-sm bg-[var(--luma-bg-elevated)] rounded-2xl p-5 animate-fade-in-up border border-[var(--luma-border)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -151,7 +152,7 @@ export function AvatarPicker({
               حداکثر حجم تصویر: ۲ مگابایت
             </p>
           </div>
-        </div>
+        </div>, document.body)
       )}
     </div>
   );

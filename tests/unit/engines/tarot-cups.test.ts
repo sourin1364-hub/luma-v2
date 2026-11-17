@@ -26,7 +26,7 @@ describe('Cups cards', () => {
 
   it('all cards have valid image paths', () => {
     CUPS_CARDS.forEach(card => {
-      expect(card.imagePath).toMatch(/^\/assets\/tarot\/cards\/cups-\d{2}(-[a-z]+)?\.webp$/);
+      expect(card.imagePath).toMatch(/^\{BASE_URL\}\/assets\/tarot\/cards\/cups-\d{2}(-[a-z]+)?\.webp$/);
     });
   });
 

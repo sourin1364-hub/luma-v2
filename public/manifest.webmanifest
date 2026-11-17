@@ -1,19 +1,21 @@
 {
-  "name": "LUMA - لوما",
+  "name": "LUMA - لُما",
   "short_name": "LUMA",
-  "description": "پلتفرم تاروت، استرولوژی و خودشناسی",
+  "description": "پلتفرم جامع تاروت، استرولوژی و افلاک‌نمای سه‌بعدی",
   "start_url": "/luma-v2/",
+  "scope": "/luma-v2/",
   "display": "standalone",
-  "background_color": "#0B0E14",
-  "theme_color": "#0B0E14",
+  "background_color": "#0f0a1c",
+  "theme_color": "#0f0a1c",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/luma-v2/icons/icon-192x192.png",
+      "src": "pwa-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/luma-v2/icons/icon-512x512.png",
+      "src": "pwa-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

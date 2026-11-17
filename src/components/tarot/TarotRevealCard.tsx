@@ -1,4 +1,5 @@
 ﻿import { motion } from 'framer-motion';
+import { useLanguageStore, UI_TRANSLATIONS } from '../../i18n/useLanguageStore';
 
 interface TarotRevealCardProps {
   isRevealed: boolean;
@@ -11,13 +12,17 @@ interface TarotRevealCardProps {
 export function TarotRevealCard({ 
   isRevealed, 
   onReveal, 
-  cardName = 'کارت شما', 
+  cardName, 
   cardImage,
   isReversed = false 
 }: TarotRevealCardProps) {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
+
   const baseUrl = import.meta.env.BASE_URL;
   const backImage = `${baseUrl}assets/tarot/cards/back.webp`;
   const frontImage = cardImage ? `${baseUrl}assets/tarot/cards/${cardImage}` : backImage;
+  const displayName = cardName || t['tarot_ui_your_card'];
 
   return (
     <div className="w-full flex justify-center py-4">
@@ -33,7 +38,7 @@ export function TarotRevealCard({
           <div className="absolute w-full h-full backface-hidden rounded-xl overflow-hidden border-2 border-[var(--luma-gold)]/30 shadow-2xl">
             <img
               src={backImage}
-              alt="پشت کارت"
+              alt={t['tarot_ui_card_back']}
               className="w-full h-full object-cover"
             />
           </div>
@@ -41,12 +46,12 @@ export function TarotRevealCard({
             {cardImage ? (
               <img
                 src={frontImage}
-                alt={cardName}
+                alt={displayName}
                 className="w-full h-full object-cover"
               />
             ) : (
               <span className="text-[var(--luma-gold)] text-sm text-center px-4">
-                {cardName}
+                {displayName}
               </span>
             )}
           </div>

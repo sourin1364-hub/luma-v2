@@ -1,198 +1,371 @@
-﻿import { useState, useEffect, useRef } from 'react';
-import { MapPin, Search, Loader2, Navigation, X } from 'lucide-react';
-import { searchCities, findNearestCity } from '../../engines/location';
-import type { CityWithProvince } from '../../engines/location';
+﻿import { useState, useEffect, useMemo } from 'react';
+import { Search, MapPin, Navigation, ExternalLink, AlertTriangle, Check, Crosshair, Loader2 } from 'lucide-react';
+import { loadCitiesWithProvinces, findNearestCity } from '../../engines/location/cities';
+import type { CityWithProvince } from '../../engines/location/types';
+import { useLanguageStore, UI_TRANSLATIONS, type TranslationKey } from '../../i18n/useLanguageStore';
+import { formatNum } from '../../i18n/format';
 
 interface CityPickerProps {
   value: CityWithProvince | null;
   onChange: (city: CityWithProvince) => void;
-  placeholder?: string;
 }
 
-export function CityPicker({ value, onChange, placeholder = 'جستجوی شهر...' }: CityPickerProps) {
+const GLOBAL_CITIES: CityWithProvince[] = [
+  { id: 9001, name: 'اربیل (هەولێر)', en_name: 'Erbil', province_id: 90, province_name: 'اقلیم کردستان', lat: 36.1901, lon: 44.0091, timezone: 'Asia/Baghdad' },
+  { id: 9002, name: 'سلیمانیه (سلێمانی)', en_name: 'Sulaymaniyah', province_id: 90, province_name: 'اقلیم کردستان', lat: 35.5650, lon: 45.4329, timezone: 'Asia/Baghdad' },
+  { id: 9003, name: 'بغداد', en_name: 'Baghdad', province_id: 91, province_name: 'عراق', lat: 33.3152, lon: 44.3661, timezone: 'Asia/Baghdad' },
+  { id: 9004, name: 'دبی (Dubai)', en_name: 'Dubai', province_id: 92, province_name: 'امارات', lat: 25.2048, lon: 55.2708, timezone: 'Asia/Dubai' },
+  { id: 9005, name: 'استانبول (Istanbul)', en_name: 'Istanbul', province_id: 93, province_name: 'ترکیه', lat: 41.0082, lon: 28.9784, timezone: 'Europe/Istanbul' },
+  { id: 9006, name: 'لندن (London)', en_name: 'London', province_id: 94, province_name: 'بریتانیا', lat: 51.5072, lon: -0.1276, timezone: 'Europe/London' },
+  { id: 9007, name: 'پاریس (Paris)', en_name: 'Paris', province_id: 95, province_name: 'فرانسه', lat: 48.8566, lon: 2.3522, timezone: 'Europe/Paris' },
+  { id: 9008, name: 'فرانکفورت (Frankfurt)', en_name: 'Frankfurt', province_id: 96, province_name: 'آلمان', lat: 50.1109, lon: 8.6821, timezone: 'Europe/Berlin' },
+  { id: 9009, name: 'تورنتو (Toronto)', en_name: 'Toronto', province_id: 97, province_name: 'کانادا', lat: 43.6532, lon: -79.3832, timezone: 'America/Toronto' },
+  { id: 9010, name: 'لس‌آنجلس (Los Angeles)', en_name: 'Los Angeles', province_id: 98, province_name: 'آمریکا', lat: 34.0522, lon: -118.2437, timezone: 'America/Los_Angeles' },
+];
+
+const GLOBAL_CITY_KEY_MAP: Record<number, { nameKey: TranslationKey; provKey: TranslationKey }> = {
+  9001: { nameKey: 'city_erbil', provKey: 'prov_kurdistan_region' },
+  9002: { nameKey: 'city_sulaymaniyah', provKey: 'prov_kurdistan_region' },
+  9003: { nameKey: 'city_baghdad', provKey: 'prov_iraq' },
+  9004: { nameKey: 'city_dubai', provKey: 'prov_uae' },
+  9005: { nameKey: 'city_istanbul', provKey: 'prov_turkey' },
+  9006: { nameKey: 'city_london', provKey: 'prov_uk' },
+  9007: { nameKey: 'city_paris', provKey: 'prov_france' },
+  9008: { nameKey: 'city_frankfurt', provKey: 'prov_germany' },
+  9009: { nameKey: 'city_toronto', provKey: 'prov_canada' },
+  9010: { nameKey: 'city_los_angeles', provKey: 'prov_usa' },
+};
+
+function localizeCity(
+  city: CityWithProvince,
+  t: Record<TranslationKey, string>,
+  lang: 'fa' | 'ckb' | 'ar' | 'en'
+): CityWithProvince {
+  const m = GLOBAL_CITY_KEY_MAP[city.id];
+  if (m) return { ...city, name: t[m.nameKey], province_name: t[m.provKey] };
+  if (lang === 'fa') return city;
+  return {
+    ...city,
+    name: city.en_name || city.name,
+    province_name: city.province_en_name || city.province_name,
+  };
+}
+
+export function CityPicker({ value, onChange }: CityPickerProps) {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
+  const [cities, setCities] = useState<CityWithProvince[]>([]);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<CityWithProvince[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isLoadingCities, setIsLoadingCities] = useState(true);
   const [isLocating, setIsLocating] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
-  const debounceRef = useRef<number>();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [gpsSuccess, setGpsSuccess] = useState<string | null>(null);
 
-  // جستجوی پویا با debounce
+  // مختصات فعلی روی نقشه (پیش‌فرض: شهر انتخاب‌شده یا تهران)
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lon: number }>({
+    lat: value?.lat || 35.6892,
+    lon: value?.lon || 51.3890,
+  });
+
   useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
-      return;
-    }
-    if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const found = await searchCities(query, 12);
-        setResults(found);
-        setIsOpen(true);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300);
+    let mounted = true;
+    loadCitiesWithProvinces()
+      .then((list: CityWithProvince[]) => {
+        if (mounted) {
+          setCities([...list, ...GLOBAL_CITIES]);
+          setIsLoadingCities(false);
+        }
+      })
+      .catch(() => {
+        if (mounted) setIsLoadingCities(false);
+      });
     return () => {
-      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+      mounted = false;
     };
-  }, [query]);
-
-  // بستن dropdown با کلیک بیرون
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (city: CityWithProvince) => {
-    onChange(city);
-    setQuery('');
-    setResults([]);
-    setIsOpen(false);
+  useEffect(() => {
+    if (value?.lat && value?.lon) {
+      setMapCoords({ lat: value.lat, lon: value.lon });
+    }
+  }, [value?.lat, value?.lon]);
+
+  const filteredCities = useMemo(() => {
+    if (!query.trim()) return cities.slice(0, 30);
+    const q = query.trim().toLowerCase();
+    return cities
+      .filter((c) => {
+        const loc = localizeCity(c, t, lang);
+        return (
+          c.name.toLowerCase().includes(q) ||
+          loc.name.toLowerCase().includes(q) ||
+          c.province_name.toLowerCase().includes(q) ||
+          loc.province_name.toLowerCase().includes(q) ||
+          (c.en_name && c.en_name.toLowerCase().includes(q))
+        );
+      })
+      .slice(0, 30);
+  }, [cities, query, t, lang]);
+
+  useEffect(() => {
+    if (query.trim() && filteredCities.length > 0) {
+      const first = filteredCities[0];
+      setMapCoords({ lat: first.lat, lon: first.lon });
+    }
+  }, [query, filteredCities]);
+
+  const handleSelectCity = (city: CityWithProvince) => {
+    setMapCoords({ lat: city.lat, lon: city.lon });
     setGpsError(null);
+    onChange(city);
   };
 
-  const handleGPS = () => {
-    if (!navigator.geolocation) {
-      setGpsError('مرورگر شما از GPS پشتیبانی نمی‌کند');
+  const handleGetGpsLocation = () => {
+    setGpsError(null);
+    setGpsSuccess(null);
+
+    if (!('geolocation' in navigator)) {
+      setGpsError(t['city_gps_error_unsupported']);
       return;
     }
+
     setIsLocating(true);
-    setGpsError(null);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(5));
+        const lon = Number(pos.coords.longitude.toFixed(5));
+        setMapCoords({ lat, lon });
+
         try {
-          const nearest = await findNearestCity(pos.coords.latitude, pos.coords.longitude);
+          const nearest = await findNearestCity(lat, lon);
           if (nearest) {
-            handleSelect(nearest);
+            const exactCity: CityWithProvince = {
+              ...nearest,
+              lat,
+              lon,
+            };
+            onChange(exactCity);
+            setQuery(nearest.name);
+            const locNearest = localizeCity(nearest, t, lang);
+            setGpsSuccess(
+              `${t['city_gps_success_exact_prefix']}${locNearest.name} (${locNearest.province_name}) — ${t['city_gps_success_exact_lat_label']}${formatNum(lat, lang)}, ${t['city_gps_success_exact_lon_label']}${formatNum(lon, lang)}`
+            );
           } else {
-            setGpsError('شهر نزدیکی پیدا نشد');
+            const customCity: CityWithProvince = {
+              id: Date.now(),
+              name: t['city_gps_custom_name'],
+              en_name: 'GPS Location',
+              province_id: 0,
+              province_name: t['city_gps_custom_province'],
+              lat,
+              lon,
+              timezone: 'Asia/Tehran',
+            };
+            onChange(customCity);
+            setGpsSuccess(
+              `${t['city_gps_success_coords_prefix']}${formatNum(lat, lang)}, ${formatNum(lon, lang)}${t['city_gps_success_coords_suffix']}`
+            );
           }
         } catch {
-          setGpsError('خطا در پیدا کردن شهر');
+          setGpsError(t['city_gps_error_match']);
         } finally {
           setIsLocating(false);
         }
       },
       (err) => {
-        setGpsError('دسترسی به موقعیت مکانی رد شد');
         setIsLocating(false);
-        console.error(err);
+        if (err.code === err.PERMISSION_DENIED) {
+          setGpsError(t['city_gps_error_denied']);
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setGpsError(t['city_gps_error_unavailable']);
+        } else {
+          setGpsError(t['city_gps_error_timeout']);
+        }
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0,
+      }
     );
   };
 
-  const handleClear = () => {
-    setQuery('');
-    setResults([]);
-    setIsOpen(false);
+  const handleManualNudge = async (dLat: number, dLon: number) => {
+    const newLat = Number((mapCoords.lat + dLat).toFixed(4));
+    const newLon = Number((mapCoords.lon + dLon).toFixed(4));
+    setMapCoords({ lat: newLat, lon: newLon });
+
+    const nearest = await findNearestCity(newLat, newLon);
+    if (nearest) {
+      onChange({
+        ...nearest,
+        lat: newLat,
+        lon: newLon,
+      });
+    }
   };
 
-  // اگر شهری انتخاب شده
-  if (value) {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-gold)]/40">
-          <MapPin className="w-4 h-4 text-[var(--luma-gold)] flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[var(--luma-text)] truncate">
-              {value.name}
-            </p>
-            <p className="text-[10px] text-[var(--luma-text-muted)] truncate">
-              {value.province_name} — {Number(value.lat).toFixed(3)}°, {Number(value.lon).toFixed(3)}°
-            </p>
-          </div>
-          <button
-            onClick={() => onChange(null as any)}
-            className="p-1 rounded-full hover:bg-[var(--luma-bg-elevated)]"
-            aria-label="حذف شهر"
-          >
-            <X className="w-4 h-4 text-[var(--luma-text-muted)]" />
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const nativeMapUrl = `https://www.google.com/maps/search/?api=1&query=${mapCoords.lat},${mapCoords.lon}`;
+  const osmEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lon - 0.08}%2C${mapCoords.lat - 0.06}%2C${mapCoords.lon + 0.08}%2C${mapCoords.lat + 0.06}&layer=mapnik&marker=${mapCoords.lat}%2C${mapCoords.lon}`;
 
   return (
-    <div ref={containerRef} className="relative">
-      <div className="relative">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--luma-text-muted)] pointer-events-none" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => query.trim() && setIsOpen(true)}
-          placeholder={placeholder}
-          className="w-full pr-10 pl-10 py-3 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] transition-colors"
-        />
-        {query && (
-          <button
-            onClick={handleClear}
-            className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--luma-bg-elevated)]"
-            aria-label="پاک کردن"
-          >
-            <X className="w-3 h-3 text-[var(--luma-text-muted)]" />
-          </button>
-        )}
-        {isLoading && (
-          <Loader2 className="absolute left-10 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--luma-gold)] animate-spin" />
+    <div className="space-y-3">
+      {/* ۱. کادر جستجوی سریع شهر و دکمه GPS */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--luma-text-muted)]" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t['city_search_ph']}
+            className="w-full pr-9 pl-3 py-2.5 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] text-xs focus:outline-none focus:border-[var(--luma-gold)]"
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGetGpsLocation}
+          disabled={isLocating}
+          className="px-3 py-2.5 rounded-xl bg-[var(--luma-gold)] text-[#0B0D1A] font-bold text-xs flex items-center gap-1.5 shadow-sm hover:opacity-90 disabled:opacity-50 flex-shrink-0"
+          title={t['city_gps_title']}
+        >
+          {isLocating ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Navigation className="w-4 h-4" />
+          )}
+          <span>{t['city_gps_btn']}</span>
+        </button>
+      </div>
+
+      {/* پیام هشدار در صورت خاموش بودن GPS یا عدم صدور مجوز */}
+      {gpsError && (
+        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/40 flex items-start gap-2.5">
+          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-amber-300 leading-relaxed text-justify">{gpsError}</p>
+        </div>
+      )}
+
+      {gpsSuccess && (
+        <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-[11px] text-emerald-400">
+          <Check className="w-4 h-4 flex-shrink-0" />
+          <span>{gpsSuccess}</span>
+        </div>
+      )}
+
+      {/* ۲. لیست شهرهای پیشنهادی بر اساس جستجو */}
+      <div className="max-h-36 overflow-y-auto rounded-xl border border-[var(--luma-border)] bg-[var(--luma-bg-subtle)] divide-y divide-[var(--luma-border)]">
+        {isLoadingCities ? (
+          <div className="p-3 text-center text-xs text-[var(--luma-text-muted)]">
+            {t['city_loading']}
+          </div>
+        ) : filteredCities.length === 0 ? (
+          <div className="p-3 text-center text-xs text-[var(--luma-text-muted)]">
+            {t['city_not_found']}
+          </div>
+        ) : (
+          filteredCities.map((c) => {
+            const loc = localizeCity(c, t, lang);
+            const isSelected = value?.id === c.id;
+            return (
+              <button
+                key={`${c.id}-${c.name}`}
+                type="button"
+                onClick={() => handleSelectCity(c)}
+                className={
+                  'w-full px-3 py-2 text-right flex items-center justify-between text-xs transition-colors ' +
+                  (isSelected
+                    ? 'bg-[var(--luma-gold)]/20 text-[var(--luma-gold)] font-bold'
+                    : 'text-[var(--luma-text)] hover:bg-[var(--luma-bg-elevated)]')
+                }
+              >
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[var(--luma-gold)]" />
+                  <span>{loc.name}</span>
+                  <span className="text-[10px] text-[var(--luma-text-muted)]">({loc.province_name})</span>
+                </div>
+                <span className="text-[10px] text-[var(--luma-text-subtle)]" dir="ltr">
+                  {c.lat.toFixed(2)}, {c.lon.toFixed(2)}
+                </span>
+              </button>
+            );
+          })
         )}
       </div>
 
-      {/* دکمه GPS */}
-      <button
-        onClick={handleGPS}
-        disabled={isLocating}
-        className="mt-2 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-[var(--luma-bg-elevated)] border border-[var(--luma-border)] text-xs text-[var(--luma-text-muted)] hover:border-[var(--luma-gold)] transition-colors disabled:opacity-50"
-      >
-        {isLocating ? (
-          <>
-            <Loader2 className="w-3 h-3 animate-spin" />
-            در حال پیدا کردن موقعیت...
-          </>
-        ) : (
-          <>
-            <Navigation className="w-3 h-3" />
-            موقعیت فعلی من
-          </>
-        )}
-      </button>
+      {/* ۳. نقشه زنده در زیر کادر جستجو + کنترل تنظیم دقیق دستی + باز کردن در Google Maps گوشی */}
+      <div className="rounded-2xl overflow-hidden border border-[var(--luma-gold)]/40 bg-[var(--luma-bg-elevated)]">
+        <div className="px-3 py-2 bg-[var(--luma-bg-subtle)] border-b border-[var(--luma-border)] flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs text-[var(--luma-text)] font-medium">
+            <Crosshair className="w-3.5 h-3.5 text-[var(--luma-gold)]" />
+            <span>
+              {t['city_map_header']} {value ? localizeCity(value, t, lang).name : t['city_map_default_city']}{' '}
+              <span className="text-[10px] text-[var(--luma-text-muted)]">
+                ({formatNum(mapCoords.lat.toFixed(3), lang)}°, {formatNum(mapCoords.lon.toFixed(3), lang)}°)
+              </span>
+            </span>
+          </div>
 
-      {gpsError && (
-        <p className="mt-1 text-[10px] text-red-400 text-center">{gpsError}</p>
-      )}
+          <a
+            href={nativeMapUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-[var(--luma-gold)]/15 text-[var(--luma-gold)] hover:bg-[var(--luma-gold)]/25 transition-colors font-bold"
+          >
+            <ExternalLink className="w-3 h-3" />
+            <span>{t['city_open_in_map']}</span>
+          </a>
+        </div>
 
-      {/* نتایج */}
-      {isOpen && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 max-h-64 overflow-y-auto bg-[var(--luma-bg-elevated)] border border-[var(--luma-border)] rounded-xl shadow-card z-50 no-scrollbar">
-          {results.map((city) => (
+        <div className="relative w-full h-48 bg-slate-900">
+          <iframe
+            title={t['city_map_iframe_title']}
+            src={osmEmbedUrl}
+            className="w-full h-full border-0"
+            loading="lazy"
+          />
+          {/* دکمه‌های جابجایی دستی پین روی نقشه */}
+          <div className="absolute bottom-2 left-2 flex gap-1 bg-black/75 backdrop-blur-sm p-1 rounded-xl border border-white/15">
             <button
-              key={city.id}
-              onClick={() => handleSelect(city)}
-              className="w-full text-right px-3 py-2.5 hover:bg-[var(--luma-bg-subtle)] transition-colors border-b border-[var(--luma-border)] last:border-0 first:rounded-t-xl last:rounded-b-xl"
+              type="button"
+              onClick={() => handleManualNudge(0.02, 0)}
+              className="px-2 py-1 text-[10px] text-white hover:text-[var(--luma-gold)]"
+              title={t['city_north']}
             >
-              <p className="text-sm font-medium text-[var(--luma-text)]">{city.name}</p>
-              <p className="text-[10px] text-[var(--luma-text-muted)]">{city.province_name}</p>
+              {t['city_north']}
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => handleManualNudge(-0.02, 0)}
+              className="px-2 py-1 text-[10px] text-white hover:text-[var(--luma-gold)]"
+              title={t['city_south']}
+            >
+              {t['city_south']}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleManualNudge(0, 0.02)}
+              className="px-2 py-1 text-[10px] text-white hover:text-[var(--luma-gold)]"
+              title={t['city_east']}
+            >
+              {t['city_east']}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleManualNudge(0, -0.02)}
+              className="px-2 py-1 text-[10px] text-white hover:text-[var(--luma-gold)]"
+              title={t['city_west']}
+            >
+              {t['city_west']}
+            </button>
+          </div>
         </div>
-      )}
 
-      {isOpen && query.trim() && results.length === 0 && !isLoading && (
-        <div className="absolute top-full left-0 right-0 mt-1 p-3 bg-[var(--luma-bg-elevated)] border border-[var(--luma-border)] rounded-xl shadow-card z-50">
-          <p className="text-xs text-[var(--luma-text-muted)] text-center">شهری پیدا نشد</p>
+        <div className="px-3 py-2 bg-[var(--luma-bg-subtle)] text-[10px] text-[var(--luma-text-muted)] leading-relaxed text-justify">
+          {t['city_map_note']}
         </div>
-      )}
+      </div>
     </div>
   );
 }

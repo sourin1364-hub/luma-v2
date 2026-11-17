@@ -1,17 +1,11 @@
 import type { NatalChart, Element } from '../../engines/astronomy/types';
-import { ZODIAC_SIGNS, PLANET_NAMES_FA } from '../../engines/astronomy/constants';
+import { ZODIAC_SIGNS, PLANET_NAMES } from '../../engines/astronomy/constants';
 import { Card } from './Card';
+import { useLanguageStore, UI_TRANSLATIONS, type TranslationKey } from '../../i18n/useLanguageStore';
 
 interface ChartInterpretationProps {
   chart: NatalChart;
 }
-
-const ELEMENT_NAMES_FA: Record<Element, string> = {
-  fire: 'آتش',
-  earth: 'خاک',
-  air: 'هوا',
-  water: 'آب'
-};
 
 const ELEMENT_COLORS: Record<Element, string> = {
   fire: '#EF4444',
@@ -20,9 +14,7 @@ const ELEMENT_COLORS: Record<Element, string> = {
   water: '#8B5CF6'
 };
 
-// تفسیر کوتاه هر سیاره در هر برج
 const PLANET_IN_SIGN_INTERPRETATIONS: Record<string, string> = {
-  // خورشید
   'sun-aries': 'پرانرژی، پیشرو و مستقل. شما با شور و شوق زندگی می‌کنید و از چالش لذت می‌برید.',
   'sun-taurus': 'پایدار، حسی و اهل لذت. شما به امنیت و زیبایی اهمیت می‌دهید و با صبر به اهدافتان می‌رسید.',
   'sun-gemini': 'کنجکاو، ارتباطی و سازگار. شما عاشق یادگیری و گفتگو هستید و ذهنی چابک دارید.',
@@ -35,7 +27,6 @@ const PLANET_IN_SIGN_INTERPRETATIONS: Record<string, string> = {
   'sun-capricorn': 'جاه‌طلب، مسئولیت‌پذیر و منظم. شما برای اهداف بلندمدت تلاش می‌کنید و پایدار هستید.',
   'sun-aquarius': 'مبتکر، مستقل و انسان‌دوست. شما به دنبال تغییر و نوآوری هستید و ذهنی آزاد دارید.',
   'sun-pisces': 'شهودی، هنرمند و دلسوز. شما با تخیل و همدلی زندگی می‌کنید و به دنیای درون اهمیت می‌دهید.',
-  // ماه
   'moon-aries': 'احساسات سریع و پرشور. شما در واکنش‌ها spontaneous هستید و به استقلال نیاز دارید.',
   'moon-taurus': 'احساسات پایدار و آرام. شما به امنیت عاطفی و لمس فیزیکی نیاز دارید.',
   'moon-gemini': 'احساسات متغیر و کنجکاو. شما از طریق گفتگو و یادگیری به آرامش می‌رسید.',
@@ -48,7 +39,6 @@ const PLANET_IN_SIGN_INTERPRETATIONS: Record<string, string> = {
   'moon-capricorn': 'احساسات کنترل‌شده و مسئول. شما از طریق دستاورد و نظم به امنیت عاطفی می‌رسید.',
   'moon-aquarius': 'احساسات مستقل و منطقی. شما به آزادی عاطفی و دوستی‌های عمیق نیاز دارید.',
   'moon-pisces': 'احساسات شهودی و دلسوز. شما بسیار حساس و همدل هستید و به هنر و معنویت کشش دارید.',
-  // ASC
   'asc-aries': 'ظاهر پرانرژی و پیشرو. شما در برخورد اول قوی و مستقل به نظر می‌رسید.',
   'asc-taurus': 'ظاهر آرام و پایدار. شما در برخورد اول قابل اعتماد و حسی به نظر می‌رسید.',
   'asc-gemini': 'ظاهر کنجکاو و ارتباطی. شما در برخورد اول باهوش و اجتماعی به نظر می‌رسید.',
@@ -69,18 +59,19 @@ function getInterpretation(planet: string, sign: string): string {
 }
 
 export function ChartInterpretation({ chart }: ChartInterpretationProps) {
-  // پیدا کردن خورشید، ماه، ASC
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
+
   const sun = chart.planets.find(p => p.planet === 'sun');
   const moon = chart.planets.find(p => p.planet === 'moon');
   const asc = chart.ascendant;
 
-  // محاسبه عناصر غالب
   const elementCounts: Record<Element, number> = { fire: 0, earth: 0, air: 0, water: 0 };
   chart.planets.forEach(p => {
     const sign = ZODIAC_SIGNS.find(s => s.name === p.sign);
     if (sign) elementCounts[sign.element]++;
   });
-  // ASC هم حساب می‌شود
+  
   const ascSign = ZODIAC_SIGNS.find(s => s.name === asc.sign);
   if (ascSign) elementCounts[ascSign.element]++;
 
@@ -94,14 +85,15 @@ export function ChartInterpretation({ chart }: ChartInterpretationProps) {
 
   return (
     <div className="space-y-4">
-      {/* سه ستاره اصلی */}
       <Card variant="gold-border" padding="md">
-        <h3 className="font-heading text-lg text-[var(--luma-text)] mb-3">سه ستاره اصلی</h3>
+        <h3 className="font-heading text-lg text-[var(--luma-text)] mb-3">{t['chart_interp_big_three']}</h3>
         <div className="space-y-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[var(--luma-gold)] text-lg">☉</span>
-              <span className="text-sm font-medium text-[var(--luma-text)]">خورشید در {sunSign?.nameFa}</span>
+              <span className="text-sm font-medium text-[var(--luma-text)]">
+                {t['chart_interp_sun_in']} {t[`chart_zodiac_${sunSign?.name}` as TranslationKey] || sunSign?.nameFa}
+              </span>
             </div>
             <p className="text-xs text-[var(--luma-text-muted)] leading-relaxed pr-6">
               {getInterpretation('sun', sun?.sign || '')}
@@ -110,7 +102,9 @@ export function ChartInterpretation({ chart }: ChartInterpretationProps) {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[var(--luma-gold)] text-lg">☽</span>
-              <span className="text-sm font-medium text-[var(--luma-text)]">ماه در {moonSign?.nameFa}</span>
+              <span className="text-sm font-medium text-[var(--luma-text)]">
+                {t['chart_interp_moon_in']} {t[`chart_zodiac_${moonSign?.name}` as TranslationKey] || moonSign?.nameFa}
+              </span>
             </div>
             <p className="text-xs text-[var(--luma-text-muted)] leading-relaxed pr-6">
               {getInterpretation('moon', moon?.sign || '')}
@@ -119,7 +113,9 @@ export function ChartInterpretation({ chart }: ChartInterpretationProps) {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[var(--luma-gold)] text-lg">↑</span>
-              <span className="text-sm font-medium text-[var(--luma-text)]">طالع در {ascSignData?.nameFa}</span>
+              <span className="text-sm font-medium text-[var(--luma-text)]">
+                {t['chart_interp_asc_in']} {t[`chart_zodiac_${ascSignData?.name}` as TranslationKey] || ascSignData?.nameFa}
+              </span>
             </div>
             <p className="text-xs text-[var(--luma-text-muted)] leading-relaxed pr-6">
               {getInterpretation('asc', asc.sign)}
@@ -128,9 +124,8 @@ export function ChartInterpretation({ chart }: ChartInterpretationProps) {
         </div>
       </Card>
 
-      {/* عناصر غالب */}
       <Card variant="elevated" padding="md">
-        <h3 className="font-heading text-lg text-[var(--luma-text)] mb-3">عناصر غالب</h3>
+        <h3 className="font-heading text-lg text-[var(--luma-text)] mb-3">{t['chart_interp_elements']}</h3>
         <div className="space-y-2">
           {(['fire', 'earth', 'air', 'water'] as Element[]).map(el => {
             const count = elementCounts[el];
@@ -138,7 +133,7 @@ export function ChartInterpretation({ chart }: ChartInterpretationProps) {
             return (
               <div key={el}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-[var(--luma-text)]">{ELEMENT_NAMES_FA[el]}</span>
+                  <span className="text-xs text-[var(--luma-text)]">{t[`chart_el_${el}` as TranslationKey]}</span>
                   <span className="text-[10px] text-[var(--luma-text-muted)]">{count}</span>
                 </div>
                 <div className="h-1.5 bg-[var(--luma-bg-subtle)] rounded-full overflow-hidden">
@@ -152,25 +147,21 @@ export function ChartInterpretation({ chart }: ChartInterpretationProps) {
           })}
         </div>
         <p className="text-xs text-[var(--luma-text-muted)] mt-3 leading-relaxed">
-          عنصر غالب شما <span className="text-[var(--luma-gold)] font-medium">{ELEMENT_NAMES_FA[dominantElement]}</span> است. این عنصر کیفیت اصلی انرژی شما را نشان می‌دهد.
+          {t['chart_interp_dominant_prefix']} <span className="text-[var(--luma-gold)] font-medium">{t[`chart_el_${dominantElement}` as TranslationKey]}</span> {t['chart_interp_dominant_suffix']}
         </p>
       </Card>
 
-      {/* جنبه‌های اصلی */}
       {chart.aspects.length > 0 && (
         <Card variant="elevated" padding="md">
-          <h3 className="font-heading text-lg text-[var(--luma-text)] mb-3">جنبه‌های اصلی</h3>
+          <h3 className="font-heading text-lg text-[var(--luma-text)] mb-3">{t['chart_interp_aspects']}</h3>
           <div className="space-y-1.5 text-xs">
             {chart.aspects.slice(0, 6).map((a, i) => (
               <div key={i} className="flex items-center justify-between py-1 border-b border-[var(--luma-border)] last:border-0">
                 <span className="text-[var(--luma-text)]">
-                  {PLANET_NAMES_FA[a.planet1]} — {PLANET_NAMES_FA[a.planet2]}
+                  {PLANET_NAMES[a.planet1][lang]} — {PLANET_NAMES[a.planet2][lang]}
                 </span>
                 <span className="text-[var(--luma-text-muted)]">
-                  {a.type === 'conjunction' ? 'قران' :
-                   a.type === 'opposition' ? 'مقابله' :
-                   a.type === 'trine' ? 'تثلیث' :
-                   a.type === 'square' ? 'تربیع' : 'تسدیس'} ({a.orb.toFixed(1)}°)
+                  {t[`chart_asp_${a.type}` as TranslationKey] || a.type} ({a.orb.toFixed(1)}°)
                 </span>
               </div>
             ))}

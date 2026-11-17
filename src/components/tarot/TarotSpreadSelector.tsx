@@ -16,6 +16,7 @@ import {
   CalendarRange,
   Lock,
 } from 'lucide-react';
+import { useLanguageStore, UI_TRANSLATIONS, translateNodeText } from '../../i18n/useLanguageStore';
 
 interface TarotSpreadSelectorProps {
   onSelect: (spread: Spread) => void;
@@ -41,6 +42,9 @@ const SPREAD_ICONS: Record<string, typeof Sparkles> = {
 const PRO_SPREAD_IDS = ['celtic-cross', 'yearly'];
 
 export function TarotSpreadSelector({ onSelect, canUseSpread }: TarotSpreadSelectorProps) {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
+
   return (
     <div className="grid grid-cols-2 gap-3">
       {SPREADS.map((spread) => {
@@ -63,20 +67,20 @@ export function TarotSpreadSelector({ onSelect, canUseSpread }: TarotSpreadSelec
             {!allowed && (
               <span className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] text-amber-400 font-bold">
                 <Lock className="w-3 h-3" />
-                {isProTier ? 'حرفه‌ای' : 'پریمیوم'}
+                {isProTier ? t['tarot_ui_pro'] : t['tarot_ui_premium']}
               </span>
             )}
             <Icon className="w-6 h-6 text-[var(--luma-gold)] mb-2" />
-            <h3 className="font-heading text-sm text-[var(--luma-text)] mb-1">{spread.nameFa}</h3>
+            <h3 className="font-heading text-sm text-[var(--luma-text)] mb-1">{translateNodeText(spread.nameFa, lang)}</h3>
             <p className="text-[10px] text-[var(--luma-text-muted)] leading-relaxed mb-2">
-              {spread.description}
+              {translateNodeText(spread.description, lang)}
             </p>
             <div className="flex items-center gap-1 text-[10px] text-[var(--luma-gold)]">
               <span>{spread.cardCount}</span>
-              <span>کارت</span>
+              <span>{t['tarot_ui_cards_unit']}</span>
               {!allowed && (
                 <span className="mr-auto text-[10px] text-amber-400 underline">
-                  فعالسازی اشتراک
+                  {t['tarot_ui_activate_sub']}
                 </span>
               )}
             </div>

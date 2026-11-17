@@ -1,4 +1,5 @@
-﻿import { useState, useMemo, useEffect } from 'react';
+﻿// src/features/home/DailyCardSection.tsx
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '../../components/ui/Card';
 import { ALL_TAROT_CARDS } from '../../engines/tarot';
@@ -6,11 +7,13 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { getAssetUrl } from '../../utils/assetPath';
 import { playCardFlipSound } from '../../utils/audio';
 import { Sparkles, RotateCcw, Clock } from 'lucide-react';
+import { useLanguageStore, UI_TRANSLATIONS } from '../../i18n/useLanguageStore';
+import { 
+  getLocalizedCardName, 
+  getLocalizedCardMeaning, 
+  getLocalizedKeywords
+} from '../tarot/tarotI18nResolver';
 
-/**
- * تولید عدد هش قطعی از رشته (ترکیب شناسه کاربر + تاریخ روز)
- * تضمین می‌کند کارت روزانه هر شخص منحصربه‌فرد باشد و راس هر ۲۴ ساعت عوض شود.
- */
 function hashString(str: string): number {
   let hash = 2166136261;
   for (let i = 0; i < str.length; i++) {
@@ -22,8 +25,9 @@ function hashString(str: string): number {
 
 export function DailyCardSection() {
   const user = useAuthStore((s) => s.user);
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
 
-  // کلید تاریخ ۲۴ ساعته بر اساس سال، ماه و روز جاری
   const todayKey = useMemo(() => {
     const now = new Date();
     return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
@@ -49,7 +53,7 @@ export function DailyCardSection() {
     const uniqueSeedString = `${user?.id || 'luma-guest'}-${user?.email || ''}-${todayKey}`;
     const hashValue = hashString(uniqueSeedString);
     const cardIndex = hashValue % ALL_TAROT_CARDS.length;
-    const reversed = (hashValue >> 4) % 10 < 3; // ۳۰٪ احتمال معکوس بودن مختص همان شخص در همان روز
+    const reversed = (hashValue >> 4) % 10 < 3; 
     return {
       dailyCard: ALL_TAROT_CARDS[cardIndex] || ALL_TAROT_CARDS[0],
       isReversed: reversed,
@@ -69,16 +73,20 @@ export function DailyCardSection() {
   const backImg = getAssetUrl('assets/tarot/cards/back.webp');
   const frontImg = getAssetUrl(`assets/tarot/cards/${dailyCard.id}.webp`);
 
+  const cardName = getLocalizedCardName(dailyCard, lang);
+  const cardMeaning = getLocalizedCardMeaning(dailyCard, isReversed, lang);
+  const keywords = getLocalizedKeywords(dailyCard, lang, isReversed);
+
   return (
     <Card variant="gold-border" padding="md" className="overflow-hidden">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-[var(--luma-gold)]" />
-          <h2 className="font-heading text-base text-[var(--luma-text)]">کارت روزانه اختصاصی شما</h2>
+          <h2 className="font-heading text-base text-[var(--luma-text)]">{t.daily_card_title}</h2>
         </div>
         <span className="flex items-center gap-1 text-[10px] text-[var(--luma-text-muted)]">
           <Clock className="w-3 h-3 text-[var(--luma-gold)]" />
-          به‌روزرسانی هر ۲۴ ساعت
+          {t.daily_card_update}
         </span>
       </div>
 
@@ -94,27 +102,25 @@ export function DailyCardSection() {
             style={{ transformStyle: 'preserve-3d' }}
             className="w-full h-full relative"
           >
-            {/* پشت کارت */}
             <div
               style={{ backfaceVisibility: 'hidden' }}
               className="absolute inset-0 rounded-xl overflow-hidden border-2 border-[var(--luma-gold)]/50 shadow-lg"
             >
-              <img src={backImg} alt="پشت کارت" className="w-full h-full object-cover" />
+              <img src={backImg} alt="Back" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-3">
                 <span className="text-[11px] px-2.5 py-1 rounded-full bg-black/70 text-[var(--luma-gold)] border border-[var(--luma-gold)]/40">
-                  لمس برای مشاهده کارت امروز
+                  {t.daily_card_tap}
                 </span>
               </div>
             </div>
 
-            {/* روی کارت */}
             <div
               style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
               className="absolute inset-0 rounded-xl overflow-hidden border-2 border-[var(--luma-gold)] shadow-xl bg-[var(--luma-bg-elevated)]"
             >
               <img
                 src={frontImg}
-                alt={dailyCard.nameFa}
+                alt={cardName}
                 className={'w-full h-full object-cover ' + (isReversed ? 'rotate-180' : '')}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = backImg;
@@ -128,22 +134,22 @@ export function DailyCardSection() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full mt-3 pt-3 border-t border-[var(--luma-border)] text-right space-y-2"
+            className="w-full mt-3 pt-3 border-t border-[var(--luma-border)] text-start space-y-2"
           >
             <div className="flex items-center justify-between">
-              <h3 className="font-heading text-base text-[var(--luma-gold)]">{dailyCard.nameFa}</h3>
+              <h3 className="font-heading text-base text-[var(--luma-gold)]">{cardName}</h3>
               {isReversed && (
                 <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
                   <RotateCcw className="w-3 h-3" />
-                  معکوس
+                  {t['tarot_ui_reversed']}
                 </span>
               )}
             </div>
             <p className="text-xs text-[var(--luma-text)] leading-relaxed text-justify">
-              {isReversed ? dailyCard.reversed.meaning : dailyCard.upright.meaning}
+              {cardMeaning}
             </p>
             <div className="flex flex-wrap gap-1 pt-1">
-              {dailyCard.keywords.map((kw, i) => (
+              {keywords.map((kw, i) => (
                 <span
                   key={i}
                   className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--luma-gold-glow)] text-[var(--luma-gold)]"
@@ -155,7 +161,7 @@ export function DailyCardSection() {
           </motion.div>
         ) : (
           <p className="text-xs text-[var(--luma-text-muted)] mt-2 text-center">
-            کارت امروز بر اساس انرژی پروفایل شما آماده شده است. روی کارت ضربه بزنید.
+            {t.daily_card_hint}
           </p>
         )}
       </div>

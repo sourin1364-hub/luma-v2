@@ -6,9 +6,14 @@ import { DatePickerJalaali, type JalaaliDateValue } from '../../components/ui/Da
 import { Hash, Sparkles, Loader2 } from 'lucide-react';
 import { calculateAbjad, calculateLifePath, getNumberMeaning } from '../../engines/numerology';
 import { jalaaliToGregorian } from '../../engines/calendar/jalaali';
-import { toPersianDigits, formatJalaaliDate } from '../../engines/calendar/format';
+import { formatJalaaliDate } from '../../engines/calendar/format';
+import { formatNum } from '../../i18n/format';
+import { useLanguageStore, UI_TRANSLATIONS } from '../../i18n/useLanguageStore';
 
 export function NumerologyScreen() {
+  const lang = useLanguageStore((s) => s.lang);
+  const t = UI_TRANSLATIONS[lang];
+
   const [fullName, setFullName] = useState('');
   const [motherName, setMotherName] = useState('');
   const [birthDate, setBirthDate] = useState<JalaaliDateValue>({
@@ -32,7 +37,7 @@ export function NumerologyScreen() {
     setError(null);
     try {
       if (!fullName.trim()) {
-        throw new Error('لطفاً نام و نام خانوادگی خود را وارد کنید');
+        throw new Error(t['num_err_name']);
       }
 
       const nameResult = calculateAbjad(fullName);
@@ -53,7 +58,7 @@ export function NumerologyScreen() {
         lifePathMaster: lifePathResult.isMasterNumber
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'خطا در محاسبه');
+      setError(e instanceof Error ? e.message : t['num_err_calc']);
     } finally {
       setIsCalculating(false);
     }
@@ -75,7 +80,7 @@ export function NumerologyScreen() {
         letterSpacing: '-0.02em'
       }}
     >
-      {toPersianDigits(value)}
+      {formatNum(value, lang)}
     </div>
   );
 
@@ -83,22 +88,22 @@ export function NumerologyScreen() {
     year: birthDate.year,
     month: birthDate.month,
     day: birthDate.day
-  });
+  }, { lang });
 
   if (results) {
     return (
       <div className="space-y-5">
         <PageHeader
-          title="تفسیر اعداد شما"
+          title={t['num_title']}
           subtitle={`${fullName} — ${formattedBirthDate}`}
           onBack={handleReset}
         />
 
         <Card variant="gold-border" padding="lg" className="text-center">
-          <p className="text-xs text-[var(--luma-text-muted)] mb-2">شماره نام شما (ابجد کبیر)</p>
+          <p className="text-xs text-[var(--luma-text-muted)] mb-2">{t['num_name_abjad']}</p>
           <BigNumber value={results.nameReduced} />
           <p className="text-[10px] text-[var(--luma-text-subtle)]">
-            مجموع ابجد: {toPersianDigits(results.nameAbjad)}
+            {t['num_sum_abjad']} {formatNum(results.nameAbjad, lang)}
           </p>
           {nameMeaning && (
             <div className="mt-4 pt-4 border-t border-[var(--luma-border)]">
@@ -116,11 +121,11 @@ export function NumerologyScreen() {
 
         {lifePathMeaning && (
           <Card variant="elevated" padding="lg" className="text-center">
-            <p className="text-xs text-[var(--luma-text-muted)] mb-2">شماره مسیر زندگی</p>
+            <p className="text-xs text-[var(--luma-text-muted)] mb-2">{t['num_life_path']}</p>
             <BigNumber value={results.lifePath} />
             {results.lifePathMaster && (
               <span className="text-xs px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 inline-block mb-3">
-                عدد استاد (Master Number)
+                {t['num_master']}
               </span>
             )}
             <p className="text-sm text-[var(--luma-text)] mb-2 leading-relaxed">{lifePathMeaning.meaning}</p>
@@ -137,19 +142,19 @@ export function NumerologyScreen() {
         {results.motherAbjad > 0 && (
           <Card variant="elevated" padding="md">
             <p className="text-sm text-[var(--luma-text)] mb-2">
-              شماره نام مادر (اختیاری)
+              {t['num_mother_optional']}
             </p>
             <div className="flex items-center justify-between">
               <BigNumber value={results.motherReduced} />
               <span className="text-[10px] text-[var(--luma-text-subtle)]">
-                مجموع ابجد: {toPersianDigits(results.motherAbjad)}
+                {t['num_sum_abjad']} {formatNum(results.motherAbjad, lang)}
               </span>
             </div>
           </Card>
         )}
 
         <Button variant="secondary" fullWidth onClick={handleReset}>
-          محاسبه مجدد
+          {t['num_recalculate']}
         </Button>
       </div>
     );
@@ -157,39 +162,39 @@ export function NumerologyScreen() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="علم اعداد" subtitle="ابجد و شماره مسیر زندگی" />
+      <PageHeader title={t['num_subtitle']} />
 
       <Card variant="elevated" padding="md">
         <div className="flex items-center gap-2 mb-3">
           <Hash className="w-4 h-4 text-[var(--luma-gold)]" />
-          <h3 className="font-heading text-sm text-[var(--luma-text)]">اطلاعات شما</h3>
+          <h3 className="font-heading text-sm text-[var(--luma-text)]">{t['num_info_title']}</h3>
         </div>
 
         <label className="block text-xs text-[var(--luma-text-muted)] mb-1">
-          نام و نام خانوادگی <span className="text-red-400">*</span>
+          {t['num_fullname']} <span className="text-red-400">*</span>
         </label>
         <input
           type="text"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          placeholder="مثال: علی رضایی"
+          placeholder={t['num_fullname_ph']}
           className="w-full px-4 py-3 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] transition-colors mb-3"
         />
 
         <label className="block text-xs text-[var(--luma-text-muted)] mb-1">
-          نام مادر (اختیاری)
+          {t['num_mother']}
         </label>
         <input
           type="text"
           value={motherName}
           onChange={(e) => setMotherName(e.target.value)}
-          placeholder="نام مادر برای محاسبه ابجد"
+          placeholder={t['num_mother_ph']}
           className="w-full px-4 py-3 rounded-xl bg-[var(--luma-bg-subtle)] border border-[var(--luma-border)] text-[var(--luma-text)] placeholder:text-[var(--luma-text-subtle)] focus:outline-none focus:border-[var(--luma-gold)] transition-colors"
         />
       </Card>
 
       <Card variant="elevated" padding="md">
-        <h3 className="font-heading text-sm text-[var(--luma-text)] mb-3">تاریخ تولد</h3>
+        <h3 className="font-heading text-sm text-[var(--luma-text)] mb-3">{t['num_birth_date']}</h3>
         <DatePickerJalaali value={birthDate} onChange={setBirthDate} />
       </Card>
 
@@ -209,12 +214,12 @@ export function NumerologyScreen() {
         {isCalculating ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            در حال محاسبه...
+            {t['num_calculating']}
           </>
         ) : (
           <>
             <Sparkles className="w-4 h-4" />
-            محاسبه اعداد
+            {t['num_calc_btn']}
           </>
         )}
       </Button>
