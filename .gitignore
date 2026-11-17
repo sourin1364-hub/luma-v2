@@ -24,3 +24,9 @@ tsconfig.tsbuildinfo
 *secret*
 payment.php
 verify.php
+.env.example
+LUMA_FULL_BACKUP.md
+PROJECT_HANDOFF_FA.md
+HANDOVER_BACKUP.md
+supabase/HANDOFF.fa.md
+supabase/SETUP_GUIDE.fa.md

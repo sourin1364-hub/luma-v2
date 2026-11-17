@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
-  base: '/luma-v2/',
+  base: process.env.CAPACITOR_BUILD === 'true' ? './' : '/luma-v2/',
   plugins: [
     react(),
     VitePWA({
@@ -13,11 +13,26 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'icons/*.svg', 'icons/*.png'],
       manifest: false,
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2,mp3}'],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        globIgnores: ['**/assets/tarot/cards/**', '**/*.mp3'],
         cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
+        navigateFallbackDenylist: [/^\/api/, /^\/supabase/, /\.apk$/],
+        runtimeCaching: [
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|webp|gif)$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'luma-images-v2',
+              expiration: {
+                maxEntries: 250,
+                maxAgeSeconds: 60 * 60 * 24 * 30,
+              },
+            },
+          },
+        ],
       },
     }),
   ],

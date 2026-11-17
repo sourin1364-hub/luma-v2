@@ -1,6 +1,4 @@
-import { supabase } from '../lib/supabase';
-
-export function normalizeIranPhone(phone: string): {
+﻿export function normalizeIranPhone(phone: string): {
   local: string;
   international: string;
   valid: boolean;
@@ -25,6 +23,8 @@ export function normalizeIranPhone(phone: string): {
   };
 }
 
+const OTP_STORAGE_PREFIX = 'luma_pending_otp_';
+
 export async function dispatchSmsOtp(
   phone: string,
   purpose: 'login' | 'password-reset' = 'login'
@@ -34,24 +34,42 @@ export async function dispatchSmsOtp(
     throw new Error('شماره موبایل واردشده معتبر نیست (مثال صحیح: 09123456789)');
   }
 
-  const { data, error } = await supabase.functions.invoke<{ sent: boolean; message: string }>(
-    'sms-otp',
-    { body: { action: 'send', phone: normalized.local, purpose } }
-  );
-  if (error) {
-    console.error('SMS OTP request failed:', error);
-    throw new Error('ارسال کد پیامکی انجام نشد. تنظیمات سرویس یا اتصال را بررسی کنید.');
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const payload = {
+    code,
+    phone: normalized.local,
+    purpose,
+    expiresAt: Date.now() + 5 * 60 * 1000,
+  };
+  sessionStorage.setItem(`${OTP_STORAGE_PREFIX}${normalized.local}`, JSON.stringify(payload));
+
+  const response = await fetch('https://lumeraworld.ir/send-sms.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone: normalized.local, code }),
+  });
+
+  const res = await response.json().catch(() => null);
+  const isSuccess =
+    response.ok &&
+    res &&
+    ((res.Value && Number(res.Value) > 20) || res.RetStatus === 1 || res.StrRetStatus === 'Ok' || res.success === true);
+
+  if (!isSuccess) {
+    console.error('MeliPayamak SMS response:', res);
+    throw new Error(res?.message || 'ارسال کد پیامکی انجام نشد. لطفاً لحظاتی دیگر تلاش کنید.');
   }
-  if (!data?.sent) {
-    throw new Error(data?.message || 'ارسال کد پیامکی انجام نشد.');
-  }
-  return data;
+
+  return {
+    sent: true,
+    message: 'کد تأیید ۶ رقمی به شماره موبایل شما پیامک شد.',
+  };
 }
 
 export async function verifySmsOtpCode(
   phone: string,
   inputCode: string,
-  purpose: 'login' | 'password-reset' = 'login'
+  _purpose: 'login' | 'password-reset' = 'login'
 ): Promise<boolean> {
   const normalized = normalizeIranPhone(phone);
   const code = inputCode
@@ -61,23 +79,22 @@ export async function verifySmsOtpCode(
 
   if (!normalized.valid || !/^\d{6}$/.test(code)) return false;
 
-  const { data, error } = await supabase.functions.invoke<{ verified: boolean; tokenHash?: string }>(
-    'sms-otp',
-    { body: { action: 'verify', phone: normalized.local, code, purpose } }
-  );
-  if (error) {
-    console.error('SMS OTP verification failed:', error);
-    throw new Error('بررسی کد پیامکی انجام نشد. دوباره تلاش کنید.');
-  }
-  if (!data?.verified || !data.tokenHash) return false;
+  const raw = sessionStorage.getItem(`${OTP_STORAGE_PREFIX}${normalized.local}`);
+  if (!raw) return false;
 
-  const { error: authError } = await supabase.auth.verifyOtp({
-    token_hash: data.tokenHash,
-    type: 'magiclink',
-  });
-  if (authError) {
-    console.error('SMS OTP session exchange failed:', authError);
-    throw new Error('تأیید کد انجام شد اما ورود امن تکمیل نشد. دوباره کد بگیرید.');
+  try {
+    const saved = JSON.parse(raw);
+    if (Date.now() > saved.expiresAt) {
+      sessionStorage.removeItem(`${OTP_STORAGE_PREFIX}${normalized.local}`);
+      return false;
+    }
+    if (saved.code === code) {
+      sessionStorage.removeItem(`${OTP_STORAGE_PREFIX}${normalized.local}`);
+      return true;
+    }
+  } catch {
+    return false;
   }
-  return true;
+
+  return false;
 }
