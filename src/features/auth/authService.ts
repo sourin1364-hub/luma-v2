@@ -170,7 +170,7 @@ export async function signUp(data: SignUpData & { phone?: string }): Promise<Aut
 }
 
 export async function signIn(data: SignInData): Promise<AuthUser> {
-  const { isPhone, normalizedPhone, authEmail, rawIdentifier } = resolveAuthIdentifier(data.email);
+  const { isPhone, normalizedPhone, rawIdentifier } = resolveAuthIdentifier(data.email);
   const loginIdentifier = isPhone && normalizedPhone ? normalizedPhone : rawIdentifier;
 
   // ۱. ورود مستقیم از طریق auth-service.php سایت لومِرا (پشتیبانی از شماره موبایل، نام کاربری و رمز سایت)
@@ -235,7 +235,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 }
 
 export async function sendOtp(emailOrPhone: string, username?: string): Promise<void> {
-  const { isPhone, normalizedPhone, authEmail } = resolveAuthIdentifier(emailOrPhone);
+  const { isPhone, normalizedPhone } = resolveAuthIdentifier(emailOrPhone);
   if (isPhone && normalizedPhone) {
     await dispatchSmsOtp(normalizedPhone, 'login');
     return;
@@ -254,7 +254,7 @@ export async function sendOtp(emailOrPhone: string, username?: string): Promise<
 }
 
 export async function verifyOtp(emailOrPhone: string, token: string): Promise<AuthUser> {
-  const { isPhone, normalizedPhone, authEmail } = resolveAuthIdentifier(emailOrPhone);
+  const { isPhone, normalizedPhone } = resolveAuthIdentifier(emailOrPhone);
 
   if (isPhone && normalizedPhone) {
     const isValid = await verifySmsOtpCode(normalizedPhone, token, 'login');
@@ -471,3 +471,4 @@ function translateAuthError(message: string): { key: string; fallback: string } 
   };
   return map[message] || { key: 'auth_err_unknown', fallback: message };
 }
+
