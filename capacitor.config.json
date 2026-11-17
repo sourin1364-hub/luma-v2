@@ -1,0 +1,6 @@
+﻿{
+  "appId": "ir.lumeraworld.luma",
+  "appName": "LUMA",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
